@@ -1,0 +1,42 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "api/app.js",
+            "use": "@vercel/node@3.0.0",
+            "config": {
+                "nodeVersion": "18.x",
+                "includeFiles": [
+                    "backend/**/*",
+                    ".env"
+                ]
+            }
+        },
+        {
+            "src": "project/*.html",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "admin/*.html",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "css/*.css",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "js/*.js",
+            "use": "@vercel/static"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "api/app.js"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "project/$1"
+        }
+    ]
+}

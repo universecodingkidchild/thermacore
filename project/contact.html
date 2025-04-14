@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | ThermaCore Fireproofing & Insulation</title>
+    <meta name="description"
+        content="Contact ThermaCore for fireproofing, insulation, drywall, and taping services. Get in touch with our team today.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+
+<body>
+    <!-- Header (same as other pages) -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Thermacore</h1>
+                <span>Fireproofing & Insulation</span>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="estimate.html">Get Estimate</a></li>
+                    <li><a href="contact.html" class="active">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="contact-page">
+        <section class="page-header">
+            <div class="container">
+                <h1>Contact Us</h1>
+                <p>Get in touch with our team for any questions or inquiries</p>
+            </div>
+        </section>
+
+
+
+        <div class="contact-form">
+
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="contactName">Full Name*</label>
+                    <input type="text" id="contactName" name="name" required>
+                    <div class="error-message"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contactEmail">Email*</label>
+                        <input type="email" id="contactEmail" name="email" required>
+                        <div class="error-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactPhone">Phone*</label>
+                        <input type="tel" id="contactPhone" name="phone" required>
+                        <div class="error-message"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="contactSubject">Subject*</label>
+                    <select id="contactSubject" name="subject" required>
+                        <option value="">Select a subject</option>
+                        <option value="general">General Inquiry</option>
+                        <option value="estimate">Estimate Request</option>
+                        <option value="service">Service Question</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <div class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="contactMessage">Message*</label>
+                    <textarea id="contactMessage" name="message" rows="5" required></textarea>
+                    <div class="error-message"></div>
+                </div>
+                <div class="form-submit">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="button-text">Send Message</span>
+                        <span class="spinner hidden"><i class="fas fa-spinner fa-spin"></i></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        </div>
+        </div>
+        </section>
+
+        <section class="map-section">
+            <div class="container">
+                <h2>Our Location</h2>
+                <div class="map-container">
+                    <!-- Replace with your actual map embed code -->
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5777.981974002583!2d-79.75892692349055!3d43.606729271104456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x882b6a8e0e96dff1%3A0x207efe8fc73f4574!2s7111%20Syntex%20Dr%2C%20Mississauga%2C%20ON%20L5N%208C3!5e0!3m2!1sen!2sca!4v1744505546814!5m2!1sen!2sca"
+                        width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <h3>ThermaCore</h3>
+                    <p>"We provide professional fireproofing, insulation, drywall, and taping services for commercial,
+                        industrial, and residential construction projects throughout the Greater Toronto Area (GTA) and
+                        surrounding regions.".</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="estimate.html">Estimate</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h3>Contact Us</h3>
+                    <p>7111 Syntex Dr<br>Mississauga, ON L5N 8C3</p>
+                    <a href="tel:+16476784281">
+                        <p>Phone: (647) 678-4281</p>
+                    </a>
+                    <a href="mailto:johnbsong@gmail.com">
+                        <p>Email: info@thermacore.ca </p>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 ThermaCore Fireproofing & Insulation. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Footer (same as other pages) -->
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/contact.js"></script>
+</body>
+
+</html>

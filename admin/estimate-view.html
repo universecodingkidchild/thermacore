@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimate Details | Thermacore Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>Thermacore</h2>
+                <span>Admin Panel</span>
+            </div>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="pages.html"><i class="fas fa-file-alt"></i> Pages</a></li>
+                    <li><a href="submissions.html"><i class="fas fa-inbox"></i> Submissions</a></li>
+                    <li><a href="seo.html"><i class="fas fa-search"></i> SEO</a></li>
+                    <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Estimate Details</h1>
+                <a href="submissions.html" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </header>
+
+            <div class="admin-content">
+                <div class="estimate-details-container">
+                    <div id="loadingIndicator" class="loading-indicator">
+                        <i class="fas fa-spinner fa-spin"></i> Loading estimate details...
+                    </div>
+                    
+                    <div id="errorDisplay" class="error-message" style="display: none;"></div>
+                    
+                    <div id="estimateDetails" style="display: none;">
+                        <div class="estimate-header">
+                            <h2>Estimate #<span id="estimateId"></span></h2>
+                            <span class="estimate-date" id="estimateDate"></span>
+                        </div>
+                        
+                        <div class="estimate-section">
+                            <h3><i class="fas fa-user-circle"></i> Client Information</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <label>Full Name</label>
+                                    <span id="clientName"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Email Address</label>
+                                    <span id="clientEmail"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Phone Number</label>
+                                    <span id="clientPhone"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Company</label>
+                                    <span id="clientCompany"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Address</label>
+                                    <span id="clientAddress"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="estimate-section">
+                            <h3><i class="fas fa-project-diagram"></i> Project Details</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <label>Project Type</label>
+                                    <span id="projectType"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Project Size</label>
+                                    <span id="projectSize"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Project Budget</label>
+                                    <span id="projectBudget"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Timeline</label>
+                                    <span id="projectTimeline"></span>
+                                </div>
+                            </div>
+                            <div class="detail-item" style="margin-top: 1.5rem;">
+                                <label>Project Description</label>
+                                <span id="projectDescription" style="white-space: pre-line;"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="estimate-section">
+                            <h3><i class="fas fa-file-alt"></i> Additional Information</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <label>Heating Requirements</label>
+                                    <span id="heatingRequirements"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Current System</label>
+                                    <span id="currentSystem"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Special Requirements</label>
+                                    <span id="specialRequirements"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="actions-bar">
+                            <button class="btn-action btn-print" onclick="window.print()">
+                                <i class="fas fa-print"></i> Print Estimate
+                            </button>
+                            <button class="btn-action btn-download" id="downloadPdf">
+                                <i class="fas fa-file-pdf"></i> Download as PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/admin-estimate-view.js"></script>
+    <script src="../js/admin-auth.js"></script>
+    
+    <script>
+        // PDF download functionality
+        document.getElementById('downloadPdf').addEventListener('click', function() {
+            // This would be implemented with a PDF generation library or API call
+            alert('PDF download functionality would be implemented here');
+            // In a real implementation, you might call:
+            // window.location.href = `/api/admin/estimates/${estimateId}/pdf`;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Estimate | ThermaCore Fireproofing & Insulation</title>
+    <meta name="description" content="Request a free estimate for our fireproofing, insulation, drywall, and taping services. Upload your blueprints and project details.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body>
+    <!-- Header (same as other pages) -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Thermacore</h1>
+                <span>Fireproofing & Insulation</span>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="estimate.html" class="active">Get Estimate</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+    <main class="estimate-page">
+        <section class="page-header">
+            <div class="container">
+                <h1>Request a Free Estimate</h1>
+                <p>Complete the form below and we'll respond within 24 hours</p>
+            </div>
+        </section>
+
+        <section class="estimate-form">
+            <div class="container">
+                <form id="estimateRequestForm" enctype="multipart/form-data">
+                    <div class="form-section">
+                        <h2>Your Information</h2>
+                        <div class="form-group">
+                            <label for="fullName">Full Name*</label>
+                            <input type="text" id="fullName" name="fullName" required>
+                            <div class="error-message"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email*</label>
+                                <input type="email" id="email" name="email" required>
+                                <div class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone*</label>
+                                <input type="tel" id="phone" name="phone" required>
+                                <div class="error-message"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="company">Company Name</label>
+                            <input type="text" id="company" name="company">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>Project Details</h2>
+                        <div class="form-group">
+                            <label for="projectType">Project Type*</label>
+                            <select id="projectType" name="projectType" required>
+                                <option value="">Select project type</option>
+                                <option value="commercial">Commercial</option>
+                                <option value="residential">Residential</option>
+                                <option value="industrial">Industrial</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div class="error-message"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Services Needed*</label>
+                            <div class="checkbox-group">
+                                <label><input type="checkbox" name="services[]" value="fireproofing"> Fireproofing</label>
+                                <label><input type="checkbox" name="services[]" value="insulation"> Insulation</label>
+                                <label><input type="checkbox" name="services[]" value="drywall"> Drywall Installation</label>
+                                <label><input type="checkbox" name="services[]" value="taping"> Drywall Taping</label>
+                            </div>
+                            <div class="error-message"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="projectDescription">Project Description*</label>
+                            <textarea id="projectDescription" name="projectDescription" rows="4" required></textarea>
+                            <div class="error-message"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="projectTimeline">Project Timeline</label>
+                            <select id="projectTimeline" name="projectTimeline">
+                                <option value="">Select timeline</option>
+                                <option value="urgent">Urgent (within 2 weeks)</option>
+                                <option value="1-3 months">1-3 months</option>
+                                <option value="3-6 months">3-6 months</option>
+                                <option value="planning">Just planning</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>Upload Blueprints (PDF only, max 20 files)</h2>
+                        <div class="file-upload-area" id="fileUploadArea">
+                            <div class="upload-instructions">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & drop your PDF files here or click to browse</p>
+                                <p class="small">Maximum 20 files (10MB each)</p>
+                            </div>
+                            <input type="file" id="blueprintFiles" name="blueprintFiles" accept=".pdf" multiple style="display: none;">
+                        </div>
+                        <div class="file-preview" id="filePreview">
+                            <p>No files selected</p>
+                        </div>
+                    </div>
+
+                    <div class="form-submit">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="button-text">Submit Request</span>
+                            <span class="spinner hidden"><i class="fas fa-spinner fa-spin"></i></span>
+                        </button>
+                        <div class="form-status"></div>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer (same as other pages) -->
+
+    <!-- Add this right before </body> -->
+
+
+<!-- To: -->
+<script src="/js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/js/estimate.js"></script>
+</body>
+</html>
