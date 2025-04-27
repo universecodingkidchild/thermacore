@@ -5,14 +5,7 @@
             "src": "backend/server.js",
             "use": "@vercel/node",
             "config": {
-                "nodeVersion": "18.x",
-                "includeFiles": [
-                    "backend/routes/**/*.js",
-                    "backend/data/**/*",
-                    "backend/services/**/*",
-                    "data/**/*",
-                    ".env"
-                ]
+                "nodeVersion": "18.x"
             }
         },
         {
@@ -72,14 +65,14 @@
         },
         {
             "src": "/css/(.*)",
-            "dest": "/project/css/$1",
+            "dest": "/css/$1",
             "headers": {
                 "Cache-Control": "public, max-age=31536000, immutable"
             }
         },
         {
             "src": "/js/(.*)",
-            "dest": "/project/js/$1",
+            "dest": "/js/$1",
             "headers": {
                 "Cache-Control": "public, max-age=31536000, immutable"
             }
@@ -90,10 +83,6 @@
             "headers": {
                 "Cache-Control": "public, max-age=31536000, immutable"
             }
-        },
-        {
-            "src": "/(es|zh)/?",
-            "dest": "/project/index.html?lang=$1"
         },
         {
             "src": "/(es|zh)/about",
@@ -108,15 +97,12 @@
             "dest": "/project/estimate.html?lang=$1"
         },
         {
-            "src": "/(.*)",
-            "status": 404,
-            "dest": "/project/404.html"
-        }
-    ],
-    "rewrites": [
+            "src": "/(es|zh)",
+            "dest": "/project/index.html?lang=$1"
+        },
         {
-            "source": "/(.*)",
-            "destination": "/project/$1"
+            "src": "/(.*)",
+            "dest": "/project/$1"
         }
     ],
     "github": {
@@ -125,7 +111,7 @@
     },
     "headers": [
         {
-            "source": "/(.*)",
+            "source": "/project/(.*)",
             "headers": [
                 {
                     "key": "X-Frame-Options",
@@ -134,10 +120,6 @@
                 {
                     "key": "X-Content-Type-Options",
                     "value": "nosniff"
-                },
-                {
-                    "key": "Referrer-Policy",
-                    "value": "strict-origin-when-cross-origin"
                 }
             ]
         }
