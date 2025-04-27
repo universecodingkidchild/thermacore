@@ -28,8 +28,57 @@
             }
         },
         {
-            "src": "/",
-            "dest": "/project/index.html"
+            "src": "/css/(.*)",
+            "dest": "/css/$1",
+            "headers": {
+                "Cache-Control": "public, max-age=31536000, immutable"
+            }
+        },
+        {
+            "src": "/js/(.*)",
+            "dest": "/js/$1",
+            "headers": {
+                "Cache-Control": "public, max-age=31536000, immutable"
+            }
+        },
+        {
+            "src": "/images/(.*)",
+            "dest": "/project/images/$1",
+            "headers": {
+                "Cache-Control": "public, max-age=31536000, immutable"
+            }
+        },
+        {
+            "src": "/es/about",
+            "dest": "/project/about.html?lang=es"
+        },
+        {
+            "src": "/zh/about",
+            "dest": "/project/about.html?lang=zh"
+        },
+        {
+            "src": "/es/contact",
+            "dest": "/project/contact.html?lang=es"
+        },
+        {
+            "src": "/zh/contact",
+            "dest": "/project/contact.html?lang=zh"
+        },
+        {
+            "src": "/es/estimate",
+            "dest": "/project/estimate.html?lang=es"
+        },
+        {
+            "src": "/zh/estimate",
+            "dest": "/project/estimate.html?lang=zh"
+        },
+        {
+            "src": "/es",
+            "dest": "/project/index.html?lang=es"
+        },
+        {
+            "src": "/zh",
+            "dest": "/project/index.html?lang=zh"
         },
         {
             "src": "/about",
@@ -64,64 +113,16 @@
             "dest": "/admin/estimates.html"
         },
         {
-            "src": "/css/(.*)",
-            "dest": "/css/$1",
-            "headers": {
-                "Cache-Control": "public, max-age=31536000, immutable"
-            }
-        },
-        {
-            "src": "/js/(.*)",
-            "dest": "/js/$1",
-            "headers": {
-                "Cache-Control": "public, max-age=31536000, immutable"
-            }
-        },
-        {
-            "src": "/images/(.*)",
-            "dest": "/project/images/$1",
-            "headers": {
-                "Cache-Control": "public, max-age=31536000, immutable"
-            }
-        },
-        {
-            "src": "/(es|zh)/about",
-            "dest": "/project/about.html?lang=$1"
-        },
-        {
-            "src": "/(es|zh)/contact",
-            "dest": "/project/contact.html?lang=$1"
-        },
-        {
-            "src": "/(es|zh)/estimate",
-            "dest": "/project/estimate.html?lang=$1"
-        },
-        {
-            "src": "/(es|zh)",
-            "dest": "/project/index.html?lang=$1"
+            "src": "/",
+            "dest": "/project/index.html"
         },
         {
             "src": "/(.*)",
-            "dest": "/project/$1"
+            "dest": "/project/404.html",
+            "status": 404
         }
     ],
     "github": {
-        "silent": true,
-        "autoJobCancelation": true
-    },
-    "headers": [
-        {
-            "source": "/project/(.*)",
-            "headers": [
-                {
-                    "key": "X-Frame-Options",
-                    "value": "SAMEORIGIN"
-                },
-                {
-                    "key": "X-Content-Type-Options",
-                    "value": "nosniff"
-                }
-            ]
-        }
-    ]
+        "silent": true
+    }
 }
