@@ -1,34 +1,47 @@
 {
     "version": 2,
-    
     "builds": [
       {
         "src": "backend/server.js",
         "use": "@vercel/node",
         "config": {
-          "nodeVersion": "18.x",
-          "cleanUrls": true
+          "nodeVersion": "18.x"
         }
       },
       {
         "src": "project/**/*",
-        "use": "@vercel/static"
+        "use": "@vercel/static",
+        "config": {
+          "cleanUrls": true
+        }
       },
       {
         "src": "admin/**/*",
-        "use": "@vercel/static"
+        "use": "@vercel/static",
+        "config": {
+          "cleanUrls": true
+        }
       },
       {
         "src": "css/**/*",
-        "use": "@vercel/static"
+        "use": "@vercel/static",
+        "config": {
+          "cleanUrls": true
+        }
       },
       {
         "src": "js/**/*",
-        "use": "@vercel/static"
+        "use": "@vercel/static",
+        "config": {
+          "cleanUrls": true
+        }
       },
       {
         "src": "images/**/*",
-        "use": "@vercel/static"
+        "use": "@vercel/static",
+        "config": {
+          "cleanUrls": true
+        }
       }
     ],
     "routes": [
@@ -81,7 +94,7 @@
       },
       {
         "src": "/api/(.*)",
-        "dest": "/api/app.js"
+        "dest": "/backend/server.js"
       },
       {
         "src": "/",
