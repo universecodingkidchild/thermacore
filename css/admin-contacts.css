@@ -1,0 +1,342 @@
+/* Contacts List Styles */
+.contacts-list-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.search-filter {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+#contactSearch {
+    flex: 1;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+#contactSearch:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+}
+
+#contactFilter {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#contactFilter:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+}
+
+#contactsTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#contactsTable th,
+#contactsTable td {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#contactsTable th {
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+#contactsTable tr:last-child td {
+    border-bottom: none;
+}
+
+#contactsTable tr:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.03);
+}
+
+.status-new {
+    color: #3498db;
+    font-weight: 600;
+    background-color: rgba(52, 152, 219, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    display: inline-block;
+}
+
+.status-read {
+    color: #9b59b6;
+    font-weight: 600;
+    background-color: rgba(155, 89, 182, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    display: inline-block;
+}
+
+.status-responded {
+    color: #2ecc71;
+    font-weight: 600;
+    background-color: rgba(46, 204, 113, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    display: inline-block;
+}
+
+.status-archived {
+    color: #95a5a6;
+    font-weight: 600;
+    background-color: rgba(149, 165, 166, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    display: inline-block;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+}
+
+.action-btn.view {
+    color: #3498db;
+}
+
+.action-btn.delete {
+    color: #e74c3c;
+}
+
+/* Contact Detail Modal */
+.contact-detail-group {
+    margin-bottom: 1.5rem;
+}
+
+.contact-detail-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.contact-detail-group p {
+    margin: 0;
+    padding: 0.75rem;
+    background: rgba(var(--primary-color-rgb), 0.05);
+    border-radius: 6px;
+    color: var(--text-color);
+}
+
+.message-content {
+    padding: 1rem;
+    background: rgba(var(--primary-color-rgb), 0.05);
+    border-radius: 6px;
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#detailStatus {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .search-filter {
+        flex-direction: column;
+    }
+
+    #contactsTable {
+        display: block;
+        overflow-x: auto;
+    }
+
+    #contactsTable th,
+    #contactsTable td {
+        padding: 0.75rem;
+        white-space: nowrap;
+    }
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    /* Align to top for scrolling */
+    opacity: 1;
+    padding: 20px 0;
+}
+
+.modal-content {
+    background: white;
+    margin: 20px auto;
+    width: 90%;
+    max-width: 700px;
+    border-radius: 10px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal.show .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: 20px;
+    background: #2c3e50;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.close-modal {
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    line-height: 1;
+    padding: 0 5px;
+}
+
+.close-modal:hover {
+    transform: scale(1.2);
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 10px auto;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .modal-footer button {
+        width: 100%;
+    }
+}
+
+/* Button Styles */
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+    transform: translateY(-1px);
+}

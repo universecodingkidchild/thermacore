@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimate Details | Thermacore Admin</title>
+    <link rel="stylesheet" href="../css/admin-estimate-view.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <!-- Cleanup anchor -->
+    <div id="admin-container-root" style="display: contents;"></div>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>Thermacore</h2>
+                <span>Admin Panel</span>
+            </div>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="submissions.html"><i class="fas fa-inbox"></i> Estimate Submissions</a></li>
+                    <li><a href="contacts.html" class="active"><i class="fas fa-envelope"></i> Contact Submissions</a>
+                    </li>
+                    <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <a href="submissions.html" class="back-button">
+                        <i class="fas fa-arrow-left"></i> Back to Submissions
+                    </a>
+                    <h1>Estimate Details</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="printEstimate"><i class="fas fa-print"></i> Print</button>
+                    <button id="downloadEstimate"><i class="fas fa-download"></i> Download</button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Loading Indicator -->
+                <div id="loadingIndicator">
+                    <i class="fas fa-spinner fa-spin"></i> Loading estimate details...
+                </div>
+
+                <!-- Error Display -->
+                <div id="errorDisplay" class="error-message" style="display: none;"></div>
+
+                <!-- Estimate Details Container -->
+                <div id="estimateDetails">
+                    <!-- Content will be dynamically inserted by JavaScript -->
+                </div>
+
+                <!-- Attachments Section -->
+                <div id="fileAttachments" class="file-attachments">
+                    <h3><i class="fas fa-paperclip"></i> Attachments</h3>
+                    <div id="attachmentList" class="attachment-list">
+                        <!-- Files will appear here -->
+                    </div>
+                </div>
+
+                <!-- Add the Cancel Loading button -->
+                <button id="cancelLoading"
+                    style="position:fixed;top:10px;right:10px;z-index:1000;padding:5px 10px;background:red;color:white;display:none;">
+                    Cancel Loading
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/admin-estimate-view.js"></script>
+    <script src="../js/admin-auth.js"></script>
+
+    <script>
+        // Initialize the cancel loading button
+        document.getElementById('cancelLoading').addEventListener('click', function () {
+            if (window.activeFetch) {
+                window.activeFetch.abort();
+            }
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('errorDisplay').style.display = 'block';
+            document.getElementById('errorDisplay').innerHTML = 'Loading was cancelled by user';
+            this.style.display = 'none';
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        // PDF download functionality
+        document.getElementById('downloadPdf').addEventListener('click', function () {
+            // This would be implemented with a PDF generation library or API call
+            alert('PDF download functionality would be implemented here');
+            // In a real implementation, you might call:
+            // window.location.href = `/api/admin/estimates/${estimateId}/pdf`;
+        });
+    </script>
+    <script src="../js/admin-settings.js"></script>
+    <script src="../js/admin-common.js"></script>
+
+
+</body>
+
+</html>

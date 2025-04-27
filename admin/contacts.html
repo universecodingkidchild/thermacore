@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Submissions | Thermacore Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-contacts.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>Thermacore</h2>
+                <span>Admin Panel</span>
+            </div>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="submissions.html"><i class="fas fa-inbox"></i> Estimate Submissions</a></li>
+                    <li><a href="contacts.html" class="active"><i class="fas fa-envelope"></i> Contact Submissions</a>
+                    </li>
+                    <li><a href="admin-settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Contact Submissions</h1>
+                <div class="header-actions">
+                    <button id="refreshContactsBtn" class="btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="contacts-list-container">
+                    <div class="search-filter">
+                        <input type="text" id="contactSearch" placeholder="Search contacts...">
+                        <select id="contactFilter">
+                            <option value="all">All Statuses</option>
+                            <option value="new">New</option>
+                            <option value="read">Read</option>
+                            <option value="responded">Responded</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+
+                    <!-- Update your contacts.html head section to include: -->
+                    <link rel="stylesheet" href="../css/admin-contacts.css">
+
+                    <!-- And make sure the table structure matches this: -->
+                    <table id="contactsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Subject</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Contacts will be loaded here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Contact Detail Modal -->
+                <!-- Contact Detail Modal -->
+                <div id="contactDetailModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 id="contactModalTitle">Contact Details</h2>
+                            <span class="close-modal">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="contact-detail-group">
+                                <label>Name</label>
+                                <p id="detailName"></p>
+                            </div>
+                            <div class="contact-detail-group">
+                                <label>Email</label>
+                                <p id="detailEmail"></p>
+                            </div>
+                            <div class="contact-detail-group">
+                                <label>Phone</label>
+                                <p id="detailPhone"></p>
+                            </div>
+                            <div class="contact-detail-group">
+                                <label>Subject</label>
+                                <p id="detailSubject"></p>
+                            </div>
+                            <div class="contact-detail-group">
+                                <label>Message</label>
+                                <div id="detailMessage" class="message-content"></div>
+                            </div>
+                            <div class="contact-detail-group">
+                                <label>Status</label>
+                                <select id="detailStatus">
+                                    <option value="new">New</option>
+                                    <option value="read">Read</option>
+                                    <option value="responded">Responded</option>
+                                    <option value="archived">Archived</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <a id="replyEmailBtn" class="btn-primary" href="#" target="_blank">
+                                <i class="fas fa-reply"></i> Reply
+                            </a>
+                            <button id="saveContactBtn" class="btn-secondary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <button id="deleteContactBtn" class="btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <script src="../js/admin-contacts.js"></script>
+                <script src="../js/admin-common.js"></script>
+</body>
+
+</html>

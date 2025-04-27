@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimate Submissions | Thermacore Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>Thermacore</h2>
+                <span>Admin Panel</span>
+            </div>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="submissions.html"><i class="fas fa-inbox"></i> Estimate Submissions</a></li>
+                    <li><a href="contacts.html" class="active"><i class="fas fa-envelope"></i> Contact Submissions</a>
+                    </li>
+                    <li><a href="admin-settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Estimate Submissions</h1>
+                <div class="admin-actions">
+                    <button id="refreshEstimates"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </div>
+            </header>
+            <!-- Add this near your table -->
+            <div id="loadingIndicator" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> Loading estimates...
+            </div>
+            <div class="admin-content">
+                <div class="estimates-list">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Project Type</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="estimatesTableBody">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/admin-submissions.js"></script>
+    <script src="../js/admin-auth.js"></script>
+    <script src="../js/admin-settings.js"></script>
+    <script src="../js/admin-common.js"></script>
+    <div class="debug-panel">
+        <button onclick="debugData()" style="position: fixed; bottom: 20px; right: 20px;">
+            🔍 Debug Estimates
+        </button>
+    </div>
+
+    <script>
+        function debugData() {
+            fetch('/api/admin/estimates', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    prompt("Copy this API response:", JSON.stringify(data, null, 2));
+                });
+        }
+    </script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/api/admin/estimates', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    console.log("API Response:", data);
+                    alert("Check console for API response structure");
+                })
+                .catch(err => console.error("Debug error:", err));
+        });
+    </script>
+</body>
+
+</html>

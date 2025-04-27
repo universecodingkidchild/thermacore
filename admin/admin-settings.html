@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Thermacore Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-settings.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>Thermacore</h2>
+                <span>Admin Panel</span>
+            </div>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="submissions.html"><i class="fas fa-inbox"></i> Estimate Submissions</a></li>
+                    <li><a href="contacts.html" class="active"><i class="fas fa-envelope"></i> Contact Submissions</a>
+                    </li>
+                    <li><a href="admin-settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Admin Settings</h1>
+            </header>
+
+            <div class="admin-content">
+                <div class="settings-grid">
+                    <!-- Theme Settings -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-palette"></i> Appearance</h2>
+                        <div class="setting-item">
+                            <label>Theme Mode</label>
+                            <div class="theme-switcher">
+                                <button class="theme-btn light active" data-theme="light">
+                                    <i class="fas fa-sun"></i> Light
+                                </button>
+                                <button class="theme-btn dark" data-theme="dark">
+                                    <i class="fas fa-moon"></i> Dark
+                                </button>
+                                <button class="theme-btn system" data-theme="system">
+                                    <i class="fas fa-desktop"></i> System
+                                </button>
+                            </div>
+                            <div class="setting-item">
+                                <label>Profile Picture</label>
+                                <div class="profile-picture-container">
+                                    <img id="profilePicture" src="../images/default-avatar.jpg" alt="Profile Picture">
+                                    <input type="file" id="profilePictureUpload" accept="image/*"
+                                        style="display: none;">
+                                    <button id="changeProfilePic" class="btn-secondary">
+                                        <i class="fas fa-camera"></i> Change
+                                    </button>
+                                    <button id="removeProfilePic" class="btn-danger">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <label>Accent Color</label>
+                            <input type="color" id="accentColor" value="#3498db">
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-bell"></i> Notifications</h2>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="emailNotifications" checked>
+                                Email Notifications
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Notification Sound</label>
+                            <select id="notificationSound">
+                                <option value="chime">Chime</option>
+                                <option value="ding">Ding</option>
+                                <option value="none">None</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Estimate Settings -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-file-invoice-dollar"></i> Estimate Settings</h2>
+                        <div class="setting-item">
+                            <label>Default Expiry Days</label>
+                            <input type="number" id="estimateExpiry" min="1" max="90" value="30">
+                        </div>
+                        <div class="setting-item">
+                            <label>Default Terms</label>
+                            <textarea id="estimateTerms"
+                                rows="4">Payment due within 15 days. 50% deposit required.</textarea>
+                        </div>
+                    </div>
+
+
+                    <!-- Security Settings -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-shield-alt"></i> Security</h2>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="twoFactorAuth">
+                                Enable Two-Factor Authentication
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Session Timeout</label>
+                            <select id="sessionTimeout">
+                                <option value="30">30 minutes</option>
+                                <option value="60" selected>1 hour</option>
+                                <option value="120">2 hours</option>
+                                <option value="0">Never</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Data Management -->
+                    <!-- Data Management -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-database"></i> Data Management</h2>
+                        <div class="setting-item">
+                            <button id="exportData" class="btn-secondary">
+                                <i class="fas fa-file-export"></i> Export All Data
+                            </button>
+                        </div>
+                        <div class="setting-item">
+                            <button id="deleteAllEstimates" class="btn-danger">
+                                <i class="fas fa-trash"></i> Delete All Estimate Submissions
+                            </button>
+                        </div>
+                        <div class="setting-item">
+                            <button id="deleteAllContacts" class="btn-danger">
+                                <i class="fas fa-trash"></i> Delete All Contact Submissions
+                            </button>
+                        </div>
+                        <div class="setting-item">
+                            <button id="clearOldEstimates" class="btn-secondary">
+                                <i class="fas fa-trash-alt"></i> Clear Estimates Older Than
+                            </button>
+                            <select id="clearEstimateAge" class="inline-select">
+                                <option value="30">30 days</option>
+                                <option value="90">90 days</option>
+                                <option value="365">1 year</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Save Button -->
+                    <div class="settings-footer">
+                        <button id="saveSettings" class="btn-primary">
+                            <i class="fas fa-save"></i> Save All Settings
+                        </button>
+                        <button id="resetSettings" class="btn-danger">
+                            <i class="fas fa-undo"></i> Reset to Defaults
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/admin-settings.js"></script>
+    <script src="../js/admin-common.js"></script>
+    <script src="../js/admin-auth.js"></script>
+</body>
+
+</html>

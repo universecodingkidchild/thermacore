@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pages Manager | Thermacore Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-pages.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Rich Text Editor CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>Thermacore</h2>
+                <span>Admin Panel</span>
+            </div>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="submissions.html"><i class="fas fa-inbox"></i> Submissions</a></li>
+                    <li><a href="pages.html" class="active"><i class="fas fa-file-alt"></i> Pages</a></li>
+                    <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Pages Manager</h1>
+                <button id="newPageBtn" class="btn-primary">
+                    <i class="fas fa-plus"></i> New Page
+                </button>
+            </header>
+
+            <div class="admin-content">
+                <div class="pages-list-container">
+                    <div class="search-filter">
+                        <input type="text" id="pageSearch" placeholder="Search pages...">
+                        <select id="pageFilter">
+                            <option value="all">All Pages</option>
+                            <option value="published">Published</option>
+                            <option value="draft">Drafts</option>
+                        </select>
+                    </div>
+
+                    <table id="pagesTable">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Slug</th>
+                                <th>Status</th>
+                                <th>Last Modified</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Pages will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Page Editor Modal (hidden by default) -->
+                <div id="pageEditorModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 id="editorTitle">New Page</h2>
+                            <span class="close-modal">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="pageTitle">Page Title</label>
+                                <input type="text" id="pageTitle" placeholder="About Us">
+                            </div>
+                            <div class="form-group">
+                                <label for="pageSlug">URL Slug</label>
+                                <div class="slug-input">
+                                    <span class="slug-prefix">thermacore.com/</span>
+                                    <input type="text" id="pageSlug" placeholder="about-us">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Page Content</label>
+                                <div id="editor" style="height: 400px;"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pageStatus">Status</label>
+                                <select id="pageStatus">
+                                    <option value="published">Published</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="archived">Archived</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="pageMetaTitle">Meta Title</label>
+                                <input type="text" id="pageMetaTitle" placeholder="SEO Title">
+                            </div>
+                            <div class="form-group">
+                                <label for="pageMetaDescription">Meta Description</label>
+                                <textarea id="pageMetaDescription" rows="3" placeholder="SEO Description"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="savePageBtn" class="btn-primary">
+                                <i class="fas fa-save"></i> Save Page
+                            </button>
+                            <button id="previewPageBtn" class="btn-secondary">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <button id="cancelPageBtn" class="btn-danger">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Rich Text Editor JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="../js/admin-pages.js"></script>
+    <script src="../js/admin-common.js"></script>
+</body>
+
+</html>
