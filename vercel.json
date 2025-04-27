@@ -10,38 +10,23 @@
       },
       {
         "src": "project/**/*",
-        "use": "@vercel/static",
-        "config": {
-          "cleanUrls": true
-        }
+        "use": "@vercel/static"
       },
       {
         "src": "admin/**/*",
-        "use": "@vercel/static",
-        "config": {
-          "cleanUrls": true
-        }
+        "use": "@vercel/static"
       },
       {
         "src": "css/**/*",
-        "use": "@vercel/static",
-        "config": {
-          "cleanUrls": true
-        }
+        "use": "@vercel/static"
       },
       {
         "src": "js/**/*",
-        "use": "@vercel/static",
-        "config": {
-          "cleanUrls": true
-        }
+        "use": "@vercel/static"
       },
       {
         "src": "images/**/*",
-        "use": "@vercel/static",
-        "config": {
-          "cleanUrls": true
-        }
+        "use": "@vercel/static"
       }
     ],
     "routes": [
@@ -50,35 +35,35 @@
         "dest": "/backend/server.js"
       },
       {
-        "src": "/admin/login",
+        "src": "/admin/login.html",
         "dest": "/admin/login.html"
       },
       {
-        "src": "/admin/settings",
+        "src": "/admin/settings.html",
         "dest": "/admin/admin-settings.html"
       },
       {
-        "src": "/admin/contacts",
+        "src": "/admin/contacts.html",
         "dest": "/admin/contacts.html"
       },
       {
-        "src": "/admin/estimates",
+        "src": "/admin/estimates.html",
         "dest": "/admin/estimates.html"
       },
       {
-        "src": "/admin/submissions",
+        "src": "/admin/submissions.html",
         "dest": "/admin/submissions.html"
       },
       {
-        "src": "/about",
+        "src": "/about.html",
         "dest": "/project/about.html"
       },
       {
-        "src": "/contact",
+        "src": "/contact.html",
         "dest": "/project/contact.html"
       },
       {
-        "src": "/estimate",
+        "src": "/estimate.html",
         "dest": "/project/estimate.html"
       },
       {
