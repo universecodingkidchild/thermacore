@@ -9,19 +9,19 @@
         }
       },
       {
-        "src": "project/**/*.html",
+        "src": "project/**/*",
         "use": "@vercel/static"
       },
       {
-        "src": "admin/**/*.html",
+        "src": "admin/**/*",
         "use": "@vercel/static"
       },
       {
-        "src": "css/**/*.css",
+        "src": "css/**/*",
         "use": "@vercel/static"
       },
       {
-        "src": "js/**/*.js",
+        "src": "js/**/*",
         "use": "@vercel/static"
       },
       {
@@ -35,16 +35,12 @@
         "dest": "/backend/server.js"
       },
       {
-        "src": "/css/style.css",
-        "dest": "/css/style.css",
+        "src": "/css/(.*)",
+        "dest": "/css/$1",
         "headers": {
           "Cache-Control": "public, max-age=86400",
           "Content-Type": "text/css"
         }
-      },
-      {
-        "src": "/css/(.*)",
-        "dest": "/css/$1"
       },
       {
         "src": "/js/(.*)",
@@ -54,7 +50,6 @@
         "src": "/images/(.*)",
         "dest": "/images/$1"
       },
-    
       {
         "src": "/(es|zh)/about",
         "dest": "/project/about.html?lang=$1"
@@ -71,50 +66,88 @@
         "src": "/(es|zh)",
         "dest": "/project/index.html?lang=$1"
       },
-   
       {
         "src": "/about",
-        "dest": "/project/about.html"
+        "dest": "/about.html"
       },
       {
         "src": "/contact",
-        "dest": "/project/contact.html"
+        "dest": "/contact.html"
       },
       {
         "src": "/estimate",
-        "dest": "/project/estimate.html"
+        "dest": "/estimate.html"
       },
-   
       {
         "src": "/admin/login",
-        "dest": "/admin/login.html"
+        "dest": "/login.html"
       },
       {
         "src": "/admin/submissions",
-        "dest": "/admin/submissions.html"
+        "dest": "/submissions.html"
       },
       {
         "src": "/admin/settings",
-        "dest": "/admin/admin-settings.html"
+        "dest": "/admin-settings.html"
       },
       {
         "src": "/admin/contacts",
-        "dest": "/admin/contacts.html"
+        "dest": "/contacts.html"
       },
       {
         "src": "/admin/estimates",
-        "dest": "/admin/estimates.html"
+        "dest": "/estimates.html"
       },
-     
       {
         "src": "/",
-        "dest": "/project/index.html"
+        "dest": "/index.html"
       },
-      
       {
         "src": "/(.*)",
-        "dest": "/project/404.html",
+        "dest": "/404.html",
         "status": 404
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/about.html",
+        "destination": "/project/about.html"
+      },
+      {
+        "source": "/contact.html",
+        "destination": "/project/contact.html"
+      },
+      {
+        "source": "/estimate.html",
+        "destination": "/project/estimate.html"
+      },
+      {
+        "source": "/index.html",
+        "destination": "/project/index.html"
+      },
+      {
+        "source": "/404.html",
+        "destination": "/project/404.html"
+      },
+      {
+        "source": "/login.html",
+        "destination": "/admin/login.html"
+      },
+      {
+        "source": "/submissions.html",
+        "destination": "/admin/submissions.html"
+      },
+      {
+        "source": "/admin-settings.html",
+        "destination": "/admin/admin-settings.html"
+      },
+      {
+        "source": "/contacts.html",
+        "destination": "/admin/contacts.html"
+      },
+      {
+        "source": "/estimates.html",
+        "destination": "/admin/estimates.html"
       }
     ],
     "github": {
