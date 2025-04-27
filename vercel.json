@@ -1,12 +1,13 @@
 {
     "version": 2,
-    "cleanUrls": true,
+    
     "builds": [
       {
         "src": "backend/server.js",
         "use": "@vercel/node",
         "config": {
-          "nodeVersion": "18.x"
+          "nodeVersion": "18.x",
+          "cleanUrls": true
         }
       },
       {
