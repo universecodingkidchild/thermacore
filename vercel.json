@@ -9,6 +9,10 @@
         }
       },
       {
+        "src": "backend/**/*",
+        "use": "@vercel/node"
+      },
+      {
         "src": "project/**/*",
         "use": "@vercel/static"
       },
