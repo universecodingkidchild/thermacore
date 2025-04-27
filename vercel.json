@@ -95,11 +95,6 @@
       {
         "src": "/(es|zh)",
         "dest": "/project/index.html?lang=$1"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/project/404.html",
-        "status": 404
       }
     ],
     "github": {
