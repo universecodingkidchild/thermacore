@@ -15,41 +15,46 @@
       {
         "src": "admin/**/*.html",
         "use": "@vercel/static"
+      },
+      {
+        "src": "css/**/*.css",
+        "use": "@vercel/static"
+      },
+      {
+        "src": "js/**/*.js",
+        "use": "@vercel/static"
+      },
+      {
+        "src": "images/**/*",
+        "use": "@vercel/static"
       }
     ],
     "routes": [
       {
         "src": "/api/(.*)",
-        "dest": "/backend/server.js",
+        "dest": "/backend/server.js"
+      },
+      {
+        "src": "/css/style.css",
+        "dest": "/css/style.css",
         "headers": {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-          "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Authorization"
+          "Cache-Control": "public, max-age=86400",
+          "Content-Type": "text/css"
         }
       },
-   
       {
         "src": "/css/(.*)",
-        "dest": "/css/$1",
-        "headers": {
-          "Cache-Control": "public, max-age=604800" 
-        }
+        "dest": "/css/$1"
       },
       {
         "src": "/js/(.*)",
-        "dest": "/js/$1",
-        "headers": {
-          "Cache-Control": "public, max-age=604800"
-        }
+        "dest": "/js/$1"
       },
       {
         "src": "/images/(.*)",
-        "dest": "/images/$1",
-        "headers": {
-          "Cache-Control": "public, max-age=604800"
-        }
+        "dest": "/images/$1"
       },
-  
+    
       {
         "src": "/(es|zh)/about",
         "dest": "/project/about.html?lang=$1"
@@ -66,7 +71,7 @@
         "src": "/(es|zh)",
         "dest": "/project/index.html?lang=$1"
       },
-  
+   
       {
         "src": "/about",
         "dest": "/project/about.html"
@@ -79,7 +84,7 @@
         "src": "/estimate",
         "dest": "/project/estimate.html"
       },
- 
+   
       {
         "src": "/admin/login",
         "dest": "/admin/login.html"
@@ -105,6 +110,7 @@
         "src": "/",
         "dest": "/project/index.html"
       },
+      
       {
         "src": "/(.*)",
         "dest": "/project/404.html",
@@ -112,7 +118,6 @@
       }
     ],
     "github": {
-      "silent": true,
-      "enabled": true
+      "silent": true
     }
   }
