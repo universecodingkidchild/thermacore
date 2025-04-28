@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
+import { kv } from '@vercel/kv';
 const path = require('path');
 const fs = require('fs')
 const fsp = require('fs').promises;
@@ -131,54 +132,20 @@ app.use(cors({
 
 app.post('/api/clear-contacts', authenticateAdmin, async (req, res) => {
     try {
-        const contactsPath = path.join(__dirname, 'data', 'contacts.json');
-
-        // Ensure directory exists
-        await fsp.mkdir(path.dirname(contactsPath), { recursive: true });
-
-        // Write empty array
-        await fsp.writeFile(contactsPath, '[]', 'utf8');
-
-        res.json({
-            success: true,
-            message: 'All contacts cleared successfully',
-            timestamp: new Date().toISOString()
-        });
+        await kv.del('contacts');
+        res.json({ success: true, message: 'All contacts cleared successfully' });
     } catch (error) {
-        console.error('Clear contacts error:', error);
-        res.status(500).json({
-            success: false,
-            error: "Failed to clear contacts",
-            message: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        });
+        res.status(500).json({ success: false, error: "Failed to clear contacts" });
     }
 });
 
 // Clear estimates endpoint
 app.post('/api/clear-estimates', authenticateAdmin, async (req, res) => {
     try {
-        const estimatesPath = path.join(__dirname, 'data', 'estimates.json');
-
-        // Ensure directory exists
-        await fsp.mkdir(path.dirname(estimatesPath), { recursive: true });
-
-        // Write empty array
-        await fsp.writeFile(estimatesPath, '[]', 'utf8');
-
-        res.json({
-            success: true,
-            message: 'All estimates cleared successfully',
-            timestamp: new Date().toISOString()
-        });
+        await kv.del('estimates');
+        res.json({ success: true, message: 'All estimates cleared successfully' });
     } catch (error) {
-        console.error('Clear estimates error:', error);
-        res.status(500).json({
-            success: false,
-            error: "Failed to clear estimates",
-            message: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        });
+        res.status(500).json({ success: false, error: "Failed to clear estimates" });
     }
 });
 app.post('/api/clear-data/:type', async (req, res) => {
@@ -302,7 +269,6 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
         }
 
         // Process the form data
-        const estimates = readEstimates();
         const newEstimate = {
             id: Date.now().toString(),
             date: new Date().toISOString(),
@@ -320,23 +286,21 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
             })) || []
         };
 
-       
-        
-
-
         // Validate email recipient
         const receivingEmail = process.env.RECEIVING_EMAIL;
         if (!receivingEmail) {
             throw new Error('No receiving email configured');
         }
-        estimates.push(newEstimate);
-        saveEstimates(estimates);
 
+        // Save to Vercel KV instead of filesystem
+        await kv.lpush('estimates', JSON.stringify(newEstimate));
+        console.log(`Estimate saved successfully to KV. ID: ${newEstimate.id}`);
 
+        // Send email (your existing mailOptions)
         const mailOptions = {
             from: `"ThermaCore Forms" <${process.env.GMAIL_USER}>`,
             to: receivingEmail,
-            subject: `New Estimate Request: ${newEstimate.fullName}`,  // Use newEstimate here
+            subject: `New Estimate Request: ${newEstimate.fullName}`,
             headers: {
                 'X-Mailer': 'ThermaCore Estimate System',
                 'X-Priority': '1',
@@ -383,7 +347,6 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
 
     } catch (error) {
         console.error('Estimate submission error:', error);
-        // Return PROPER JSON error response
         res.status(500).json({ 
             success: false,
             error: 'Internal server error',
@@ -454,6 +417,15 @@ app.get('/api/admin/estimates', authenticateAdmin, (req, res) => {
         });
     }
 });
+app.get('/api/admin/contacts', authenticateAdmin, async (req, res) => {
+    try {
+        const contacts = await kv.lrange('contacts', 0, -1);
+        const parsedContacts = contacts.map(c => JSON.parse(c)).reverse();
+        res.json(parsedContacts);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch contacts' });
+    }
+});
 
 // New endpoints for admin panel
 app.get('/api/admin/estimates-count', authenticateAdmin, (req, res) => {
@@ -493,16 +465,13 @@ app.get('/api/admin/recent-contacts', authenticateAdmin, (req, res) => {
         res.status(500).json({ error: 'Failed to get recent contacts' });
     }
 });
-app.get('/api/admin/estimates/:id', authenticateAdmin, async (req, res) => {
+app.get('/api/admin/estimates', authenticateAdmin, async (req, res) => {
     try {
-        const estimate = await Estimate.findById(req.params.id);
-        if (!estimate) {
-            return res.status(404).json({ error: 'Estimate not found' });
-        }
-        res.json(estimate);
+        const estimates = await kv.lrange('estimates', 0, -1);
+        const parsedEstimates = estimates.map(e => JSON.parse(e)).reverse(); // Newest first
+        res.json(parsedEstimates);
     } catch (error) {
-        console.error('Error fetching estimate:', error);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Failed to fetch estimates' });
     }
 });
 
@@ -612,89 +581,8 @@ app.post('/api/contact', express.json(), async (req, res) => {
         });
     }
 
-    // Initialize data directory and file
-    const DATA_DIR = path.join(__dirname, 'data');
-    if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR);
-    }
-
-    const ESTIMATES_FILE = path.join(DATA_DIR, 'estimates.json');
-    if (!fs.existsSync(ESTIMATES_FILE)) {
-        fs.writeFileSync(ESTIMATES_FILE, '[]');
-    }
-
-    const CONTACTS_FILE = path.join(DATA_DIR, 'contacts.json');
-    if (!fs.existsSync(CONTACTS_FILE)) {
-        fs.writeFileSync(CONTACTS_FILE, '[]');
-    }
-    const contactsPath = path.join(DATA_DIR, 'contacts.json');
-
     try {
-        // 1. Ensure data directory exists
-        if (!fs.existsSync(DATA_DIR)) {  // Changed from dataDir to DATA_DIR
-            console.log("Creating data directory...");
-            fs.mkdirSync(DATA_DIR, { recursive: true });  // Changed from dataDir to DATA_DIR
-        }
-        // ... rest of your code ...
-        // 2. Initialize contacts file if missing or invalid
-        let contacts = [];
-        if (fs.existsSync(contactsPath)) {
-            try {
-                const fileContent = fs.readFileSync(contactsPath, 'utf8');
-                contacts = JSON.parse(fileContent);
-
-                if (!Array.isArray(contacts)) {
-                    throw new Error("Contacts file does not contain an array");
-                }
-            } catch (err) {
-                console.error("Error reading contacts file, resetting:", err);
-                contacts = [];
-                fs.writeFileSync(contactsPath, '[]', 'utf8');
-            }
-        } else {
-            console.log("Contacts file not found, creating new one");
-            fs.writeFileSync(contactsPath, '[]', 'utf8');
-        }
-        // File system helpers
-        function readEstimates() {
-            try {
-                const data = fsSync.readFileSync(ESTIMATES_FILE, 'utf8');
-                return JSON.parse(data);
-            } catch (err) {
-                console.error('Error reading estimates:', err);
-                return [];
-            }
-        }
-
-        function saveEstimates(estimates) {
-            try {
-                fsSync.writeFileSync(ESTIMATES_FILE, JSON.stringify(estimates, null, 2));
-            } catch (err) {
-                console.error('Error saving estimates:', err);
-            }
-        }
-
-        function readContacts() {
-            try {
-                const data = fsSync.readFileSync(CONTACTS_FILE, 'utf8');
-                return JSON.parse(data);
-            } catch (err) {
-                console.error('Error reading contacts:', err);
-                return [];
-            }
-        }
-
-
-
-        function saveContacts(contacts) {
-            try {
-                fsSync.writeFileSync(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
-            } catch (err) {
-                console.error('Error saving contacts:', err);
-            }
-        }
-
-        // 3. Create new contact (EXACTLY AS YOU HAD IT)
+        // Create new contact
         const newContact = {
             id: Date.now().toString(),
             name: req.body.name,
@@ -707,13 +595,11 @@ app.post('/api/contact', express.json(), async (req, res) => {
             updatedAt: new Date().toISOString()
         };
 
-        // 4. Add to contacts and save
-        contacts.push(newContact);
-        saveContacts(contacts);
-        fs.writeFileSync(contactsPath, JSON.stringify(contacts, null, 2), 'utf8');
-        console.log(`Contact saved successfully. Total contacts: ${contacts.length}`);
+        // Save to Vercel KV instead of filesystem
+        await kv.lpush('contacts', JSON.stringify(newContact));
+        console.log(`Contact saved successfully to KV. ID: ${newContact.id}`);
 
-        // 5. YOUR ORIGINAL mailOptions (EXACTLY AS YOU HAD IT)
+        // Send email (your existing mailOptions)
         const mailOptions = {
             from: `"ThermaCore Contact Form" <${process.env.GMAIL_USER}>`,
             to: process.env.CONTACT_EMAIL || process.env.RECEIVING_EMAIL,
@@ -745,11 +631,11 @@ app.post('/api/contact', express.json(), async (req, res) => {
             priority: 'high'
         };
 
-        // 6. Send email
+        // Send email
         const info = await sendEmailWithRetry(mailOptions);
         console.log('Contact email sent:', info.messageId);
 
-        // 7. Send success response
+        // Send success response
         res.json({
             success: true,
             messageId: info.messageId,
