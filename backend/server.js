@@ -3,6 +3,7 @@ const express = require('express');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
 import { kv } from '@vercel/kv';
+import { createClient } from '@vercel/kv';
 const path = require('path');
 const fs = require('fs')
 const fsp = require('fs').promises;
@@ -13,7 +14,10 @@ const { PDFDocument, rgb } = require('pdf-lib');
 const app = express();
 const router = express.Router();
 const adminRoutes = require('./routes/admin');
-
+const kv = createClient({
+    url: process.env.KV_REST_API_URL,
+    token: process.env.KV_REST_API_TOKEN,
+  });
 app.use('/api/admin', adminRoutes); // This creates the /api/admin prefix
 // Add this near the top of server.js
 
