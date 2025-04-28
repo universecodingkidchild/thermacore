@@ -6,10 +6,12 @@
         "use": "@vercel/node",
         "config": {
             "includeFiles":[
-                "backend/data/**",
+                "backend/data/contacts.json",
+                "backend/data/estimates.json",
                 "backend/utils/**", 
                 "backend/routes/**",
-                "backend/services" 
+                "backend/services",
+                "backend/**"
 
             ],
           "nodeVersion": "18.x"
