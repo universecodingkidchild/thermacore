@@ -293,9 +293,16 @@ function saveEstimates(estimates) {
 // Modified estimate endpoint to store submissions
 app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) => {
     try {
-        const estimates = readEstimates();
+        // Ensure proper content type
+        if (!req.is('multipart/form-data')) {
+            return res.status(400).json({ 
+                success: false,
+                error: 'Invalid content type' 
+            });
+        }
 
-        // Define newEstimate first
+        // Process the form data
+        const estimates = readEstimates();
         const newEstimate = {
             id: Date.now().toString(),
             date: new Date().toISOString(),
@@ -303,21 +310,18 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
             email: req.body.email,
             phone: req.body.phone,
             projectType: req.body.projectType,
-            services: req.body.services ?
-                (Array.isArray(req.body.services) ? req.body.services : [req.body.services]) :
-                [],
+            services: req.body.services ? 
+                (Array.isArray(req.body.services) ? req.body.services : [req.body.services]) : [],
             projectDescription: req.body.projectDescription,
             files: req.files?.map(file => ({
                 originalname: file.originalname,
                 mimetype: file.mimetype,
                 size: file.size
             })) || []
-
         };
 
-        // Now push to estimates
-        estimates.push(newEstimate);
-        saveEstimates(estimates);
+       
+        
 
 
         // Validate email recipient
@@ -325,6 +329,9 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
         if (!receivingEmail) {
             throw new Error('No receiving email configured');
         }
+        estimates.push(newEstimate);
+        saveEstimates(estimates);
+
 
         const mailOptions = {
             from: `"ThermaCore Forms" <${process.env.GMAIL_USER}>`,
@@ -368,13 +375,19 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
         const info = await sendEmailWithRetry(mailOptions);
         console.log('Email sent:', info.messageId);
 
-        res.json({ success: true, id: newEstimate.id });
+        res.status(200).json({ 
+            success: true,
+            message: 'Estimate submitted successfully',
+            id: newEstimate.id
+        });
+
     } catch (error) {
-        console.error('Error processing estimate:', error);
-        res.status(500).json({
-            error: 'Submission failed',
-            details: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        console.error('Estimate submission error:', error);
+        // Return PROPER JSON error response
+        res.status(500).json({ 
+            success: false,
+            error: 'Internal server error',
+            message: error.message
         });
     }
 });
@@ -696,6 +709,7 @@ app.post('/api/contact', express.json(), async (req, res) => {
 
         // 4. Add to contacts and save
         contacts.push(newContact);
+        saveContacts(contacts);
         fs.writeFileSync(contactsPath, JSON.stringify(contacts, null, 2), 'utf8');
         console.log(`Contact saved successfully. Total contacts: ${contacts.length}`);
 

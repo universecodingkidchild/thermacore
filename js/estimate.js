@@ -175,39 +175,35 @@ document.addEventListener('DOMContentLoaded', function () {
     // Form submission
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
-
-        // Validate form
-        if (!validateForm()) {
-            return;
-        }
-
+    
+        if (!validateForm()) return;
+    
         // Show loading state
         if (buttonText) buttonText.textContent = 'Processing...';
         if (spinner) spinner.classList.remove('hidden');
         submitButton.disabled = true;
-
+    
         try {
-            // Create FormData object
             const formData = new FormData(form);
-
-            // Debug: Log form data before sending
-            console.debug('Submitting form data:', {
-                name: formData.get('name'),
-                email: formData.get('email'),
-                files: fileInput.files.length
-            });
-
-            // Send data to server
+            
             const response = await fetch('/api/send-estimate', {
                 method: 'POST',
                 body: formData
             });
-
+    
+            // First check if response is OK
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Submission failed');
+            }
+    
+            // Then parse JSON
             const data = await response.json();
-
+            
             if (data.success) {
+                // Replace showSuccessAlert with the actual alert function
                 await showAlert(
-                    'Request Submitted!',
+                    'Request Submitted!', 
                     'Your estimate request has been received. One of our estimators will reach out to you once your quote is ready.',
                     'success'
                 );
@@ -230,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function () {
             submitButton.disabled = false;
         }
     });
-
     function validateForm() {
         let isValid = true;
 

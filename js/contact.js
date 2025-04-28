@@ -4,22 +4,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const buttonText = submitButton.querySelector('.button-text');
     const spinner = submitButton.querySelector('.spinner');
 
+    function showSuccessAlert() {
+        return showAlert(
+            'Success', 
+            'Your message has been sent successfully!', 
+            'success'
+        );
+    }
+
+    function showAlert(title, text, icon = 'info') {
+        // Use SweetAlert if available (requires SweetAlert2 library)
+        if (typeof Swal !== 'undefined') {
+            return Swal.fire({
+                title,
+                text,
+                icon,
+                confirmButtonText: 'OK'
+            });
+        }
+        // Fallback to browser alert
+        alert(`${title}: ${text}`);
+        return Promise.resolve();
+    }
+
     // Form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        // Validate form
-        if (!validateForm()) {
-            return;
-        }
+        if (!validateForm()) return;
         
-        // Show loading state
         buttonText.textContent = 'Sending...';
         spinner.classList.remove('hidden');
         submitButton.disabled = true;
         
         try {
-            // Create form data object
             const formData = {
                 name: form.querySelector('#contactName').value.trim(),
                 email: form.querySelector('#contactEmail').value.trim(),
@@ -28,50 +46,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 message: form.querySelector('#contactMessage').value.trim()
             };
             
-            // Send to server
             const response = await fetch('/api/contact', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json' 
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-            
+    
+            // First check response status
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Submission failed');
+            }
+    
+            // Then parse JSON
             const result = await response.json();
             
-            if (response.ok && result.success) {
-                await Swal.fire({
-                    title: 'Message Sent!',
-                    html: 'Thank you for contacting us. We will get back to you within 24 hours. ' + (result.messageId || 'N/A'),
-                    icon: 'success',
-                    confirmButtonColor: '#e74c3c',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        popup: 'sweetalert-custom',
-                        title: 'sweetalert-title'
-                    }
-                });
+            if (result.success) {
+                await showSuccessAlert();
                 form.reset();
             } else {
-                await Swal.fire({
-                    title: 'Error',
-                    text: result.message || 'There was an error sending your message. Please try again.',
-                    icon: 'error',
-                    confirmButtonColor: '#e74c3c',
-                    confirmButtonText: 'OK'
-                });
+                throw new Error(result.message || 'Submission failed');
             }
         } catch (error) {
             console.error('Submission error:', error);
-            await Swal.fire({
-                title: 'Network Error',
-                text: 'Could not connect to the server. Please check your internet connection and try again.',
-                icon: 'error',
-                confirmButtonColor: '#e74c3c',
-                confirmButtonText: 'OK'
-            });
+            await showAlert(
+                'Error', 
+                error.message || 'Could not connect to the server',
+                'error'
+            );
         } finally {
-            // Reset button state
             buttonText.textContent = 'Send Message';
             spinner.classList.add('hidden');
             submitButton.disabled = false;
