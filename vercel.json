@@ -6,16 +6,16 @@
         "use": "@vercel/node",
         "config": {
             "includeFiles":[
-                "backend/data/**"
+                "backend/data/**",
+                "backend/utils/**", 
+                "backend/routes/**",
+                "backend/services" 
 
             ],
           "nodeVersion": "18.x"
         }
       },
-      {
-        "src": "backend/**/*",
-        "use": "@vercel/node"
-      },
+  
       {
         "src": "project/**/*",
         "use": "@vercel/static"
