@@ -10,31 +10,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadEstimates() {
         try {
-            estimatesTable.innerHTML = '<tr><td colspan="6">Loading submissions...</td></tr>';
-            
-            const response = await fetch('/api/admin/estimates', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Server returned ${response.status}`);
-            }
+            const response = await fetch('/api/admin/estimates');
+            if (!response.ok) throw new Error('Network response was not ok');
             
             const estimates = await response.json();
+            console.log('Raw estimates data:', estimates); // Debugging
             
-            if (estimates.length === 0) {
-                estimatesTable.innerHTML = '<tr><td colspan="6">No submissions found</td></tr>';
+            const tableBody = document.getElementById('estimates-table-body');
+            if (!tableBody) {
+                console.error('Estimates table body not found!');
                 return;
             }
-            
-            renderEstimates(estimates);
+    
+            tableBody.innerHTML = estimates.map(estimate => `
+                <tr>
+                    <td>${estimate.fullName}</td> <!-- Changed from name to fullName -->
+                    <td>${estimate.projectType}</td>
+                    <td>${estimate.date}</td>
+                    <!-- other columns -->
+                </tr>
+            `).join('');
+    
         } catch (error) {
-            console.error('Error loading estimates:', error);
-            estimatesTable.innerHTML = `<tr><td colspan="6">Failed to load submissions: ${error.message}</td></tr>`;
+            console.error('Failed to load estimates:', error);
+            // Show error to user
+            alert('Failed to load estimates. Check console for details.');
         }
     }
+    
+    // Call this when the page loads
+    document.addEventListener('DOMContentLoaded', loadEstimates);
 
     function renderEstimates(estimates) {
         estimatesTable.innerHTML = '';

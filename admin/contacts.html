@@ -56,6 +56,14 @@
                     <link rel="stylesheet" href="../css/admin-contacts.css">
 
                     <!-- And make sure the table structure matches this: -->
+                    <div id="loadingIndicator" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                    
+                    <!-- Error Display -->
+                    <div id="errorDisplay" class="error-message" style="display: none;"></div>
+                    
+                    <!-- Contacts Table -->
                     <table id="contactsTable">
                         <thead>
                             <tr>
@@ -68,50 +76,54 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Contacts will be loaded here dynamically -->
+                            <!-- Rows will be inserted here -->
                         </tbody>
                     </table>
-                </div>
-
-                <!-- Contact Detail Modal -->
-                <!-- Contact Detail Modal -->
-                <div id="contactDetailModal" class="modal">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2 id="contactModalTitle">Contact Details</h2>
+                    
+                    <!-- Contact Detail Modal -->
+                    <div id="contactDetailModal" class="modal">
+                        <div class="modal-content">
                             <span class="close-modal">&times;</span>
+                            <h2>Contact Details</h2>
+                            
+                            <div class="detail-group">
+                                <label>Name:</label>
+                                <p id="modalContactName"></p>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <label>Email:</label>
+                                <p id="modalContactEmail"></p>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <label>Phone:</label>
+                                <p id="modalContactPhone"></p>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <label>Subject:</label>
+                                <p id="modalContactSubject"></p>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <label>Message:</label>
+                                <p id="modalContactMessage"></p>
+                            </div>
+                            
+                            <div class="modal-actions">
+                                <a id="replyEmailBtn" class="btn" style="display: none;">
+                                    <i class="fas fa-reply"></i> Reply
+                                </a>
+                                <button id="saveContactBtn" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <button id="deleteContactBtn" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
                         </div>
-                        <div class="modal-body">
-                            <div class="contact-detail-group">
-                                <label>Name</label>
-                                <p id="detailName"></p>
-                            </div>
-                            <div class="contact-detail-group">
-                                <label>Email</label>
-                                <p id="detailEmail"></p>
-                            </div>
-                            <div class="contact-detail-group">
-                                <label>Phone</label>
-                                <p id="detailPhone"></p>
-                            </div>
-                            <div class="contact-detail-group">
-                                <label>Subject</label>
-                                <p id="detailSubject"></p>
-                            </div>
-                            <div class="contact-detail-group">
-                                <label>Message</label>
-                                <div id="detailMessage" class="message-content"></div>
-                            </div>
-                            <div class="contact-detail-group">
-                                <label>Status</label>
-                                <select id="detailStatus">
-                                    <option value="new">New</option>
-                                    <option value="read">Read</option>
-                                    <option value="responded">Responded</option>
-                                    <option value="archived">Archived</option>
-                                </select>
-                            </div>
-                        </div>
+                    </div>
                         <div class="modal-footer">
                             <a id="replyEmailBtn" class="btn-primary" href="#" target="_blank">
                                 <i class="fas fa-reply"></i> Reply

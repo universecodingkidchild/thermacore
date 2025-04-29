@@ -1,9 +1,9 @@
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
-import { kv } from '@vercel/kv';
-import { createClient } from '@vercel/kv';
+
 const path = require('path');
 const fs = require('fs')
 const fsp = require('fs').promises;
@@ -14,10 +14,10 @@ const { PDFDocument, rgb } = require('pdf-lib');
 const app = express();
 const router = express.Router();
 const adminRoutes = require('./routes/admin');
-const kv = createClient({
-    url: process.env.KV_REST_API_URL,
-    token: process.env.KV_REST_API_TOKEN,
-  });
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_KEY
+  );
 app.use('/api/admin', adminRoutes); // This creates the /api/admin prefix
 // Add this near the top of server.js
 
@@ -272,6 +272,12 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
             });
         }
 
+        // Define receivingEmail first
+        const receivingEmail = process.env.RECEIVING_EMAIL;
+        if (!receivingEmail) {
+            throw new Error('No receiving email configured');
+        }
+
         // Process the form data
         const newEstimate = {
             id: Date.now().toString(),
@@ -290,20 +296,26 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
             })) || []
         };
 
-        // Validate email recipient
-        const receivingEmail = process.env.RECEIVING_EMAIL;
-        if (!receivingEmail) {
-            throw new Error('No receiving email configured');
-        }
+        // Save to database (Supabase version)
+        const { data, error } = await supabase
+            .from('estimates')
+            .insert([{
+                full_name: newEstimate.fullName,
+                email: newEstimate.email,
+                phone: newEstimate.phone,
+                project_type: newEstimate.projectType,
+                services: newEstimate.services,
+                project_description: newEstimate.projectDescription,
+                files: newEstimate.files
+            }])
+            .select();
 
-        // Save to Vercel KV instead of filesystem
-        await kv.lpush('estimates', JSON.stringify(newEstimate));
-        console.log(`Estimate saved successfully to KV. ID: ${newEstimate.id}`);
+        if (error) throw error;
 
-        // Send email (your existing mailOptions)
+        // Send email
         const mailOptions = {
             from: `"ThermaCore Forms" <${process.env.GMAIL_USER}>`,
-            to: receivingEmail,
+            to: receivingEmail,  // Now properly defined
             subject: `New Estimate Request: ${newEstimate.fullName}`,
             headers: {
                 'X-Mailer': 'ThermaCore Estimate System',
@@ -327,7 +339,7 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
                   <p style="line-height: 1.6;">${newEstimate.projectDescription}</p>
                   ${newEstimate.files.length ? `<p style="font-size: 14px; color: #666;">📎 ${newEstimate.files.length} file(s) attached</p>` : ''}
               </div>
-          `,
+            `,
             attachments: newEstimate.files.map(file => ({
                 filename: file.originalname,
                 content: file.buffer,
@@ -335,18 +347,13 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
             }))
         };
 
-        // Verify mail options before sending
-        if (!mailOptions.to) {
-            throw new Error('No recipient email address specified');
-        }
-
         const info = await sendEmailWithRetry(mailOptions);
         console.log('Email sent:', info.messageId);
 
         res.status(200).json({ 
             success: true,
             message: 'Estimate submitted successfully',
-            id: newEstimate.id
+            id: data[0].id
         });
 
     } catch (error) {
@@ -359,20 +366,21 @@ app.post('/api/send-estimate', upload.array('blueprintFiles'), async (req, res) 
     }
 });
 // Example Express route
-router.delete('/api/admin/estimates', async (req, res) => {
+app.get('/api/admin/contacts/:id', authenticateAdmin, async (req, res) => {
     try {
-        const { olderThan } = req.query;
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - parseInt(olderThan));
-
-        await Estimate.deleteMany({
-            date: { $lt: cutoffDate },
-            status: { $ne: 'approved' }
-        });
-
-        res.status(200).json({ message: `Deleted estimates older than ${olderThan} days` });
+        const { data, error } = await supabase
+            .from('contacts')
+            .select('*')
+            .eq('id', req.params.id)
+            .single();
+        
+        if (error || !data) {
+            return res.status(404).json({ error: 'Contact not found' });
+        }
+        
+        res.json(data);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 router.get('/api/admin/estimates/:id/pdf', async (req, res) => {
@@ -407,66 +415,163 @@ router.get('/api/admin/estimates/:id/pdf', async (req, res) => {
     }
 });
 
-app.get('/api/admin/estimates', authenticateAdmin, (req, res) => {
+app.get('/api/admin/estimates', authenticateAdmin, async (req, res) => {
     try {
-        const estimates = readEstimates();
-        // Return newest first
-        const sortedEstimates = [...estimates].reverse();
-        res.json(sortedEstimates);
+        const { data, error } = await supabase
+            .from('estimates')
+            .select(`
+                id,
+                full_name,
+                email,
+                phone,
+                project_type,
+                services,
+                project_description,
+                files,
+                created_at
+            `)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Transform the data with proper field names and date handling
+        const formattedEstimates = data.map(item => ({
+            id: item.id,
+            fullName: item.full_name || 'No name provided',  // Ensure proper field name
+            email: item.email || 'No email',
+            phone: item.phone || 'No phone',
+            projectType: item.project_type || 'No type specified',
+            services: item.services || [],
+            description: item.project_description || 'No description',
+            files: item.files || [],
+            date: formatDate(item.created_at)  // Use a proper date formatter
+        }));
+
+        res.json(formattedEstimates);
+
     } catch (error) {
-        console.error('Error fetching estimates:', error);
+        console.error('Admin estimates error:', error);
         res.status(500).json({
-            error: 'Failed to fetch estimates',
+            error: 'Failed to load estimates',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
+
+// Add this helper function
+function formatDate(dateString) {
+    if (!dateString) return 'No date available';
+    
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        console.warn('Date formatting failed:', e);
+        return 'Invalid date';
+    }
+}
 app.get('/api/admin/contacts', authenticateAdmin, async (req, res) => {
     try {
-        const contacts = await kv.lrange('contacts', 0, -1);
-        const parsedContacts = contacts.map(c => JSON.parse(c)).reverse();
-        res.json(parsedContacts);
+        const { data: contacts, error } = await supabase
+            .from('contacts')
+            .select(`
+                id,
+                name,
+                email,
+                phone,
+                subject,
+                message,
+                status,
+                created_at
+            `)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Transform for frontend
+        const formattedContacts = contacts.map(contact => ({
+            id: contact.id,
+            name: contact.name || 'No name',
+            email: contact.email || 'No email',
+            phone: contact.phone || 'No phone',
+            subject: contact.subject || 'No subject',
+            message: contact.message || 'No message',
+            status: contact.status || 'new',
+            date: contact.created_at ? new Date(contact.created_at).toLocaleString() : 'No date'
+        }));
+
+        res.json(formattedContacts);
+
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch contacts' });
+        console.error('Contacts endpoint error:', error);
+        res.status(500).json({ error: 'Failed to load contacts' });
     }
 });
-
 // New endpoints for admin panel
-app.get('/api/admin/estimates-count', authenticateAdmin, (req, res) => {
+app.get('/api/admin/estimates-count', authenticateAdmin, async (req, res) => {
     try {
-        const estimates = readEstimates();
-        res.json({ count: estimates.length });
+        const { count, error } = await supabase
+            .from('estimates')
+            .select('*', { count: 'exact', head: true });
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            count: count || 0
+        });
+
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get count' });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get estimates count'
+        });
     }
 });
 // Add these endpoints alongside your existing estimate endpoints
-app.get('/api/admin/contacts-count', authenticateAdmin, (req, res) => {
+app.get('/api/admin/estimates-count', authenticateAdmin, async (req, res) => {
     try {
-        const contactsPath = path.join(__dirname, 'data', 'contacts.json');
-        if (!fs.existsSync(contactsPath)) {
-            return res.json({ count: 0 });
-        }
-        const contacts = JSON.parse(fs.readFileSync(contactsPath));
-        res.json({ count: contacts.length });
+        const { count, error } = await supabase
+            .from('estimates')
+            .select('*', { count: 'exact', head: true });
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            count: count || 0
+        });
+
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get contacts count' });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get estimates count'
+        });
     }
 });
 
-app.get('/api/admin/recent-contacts', authenticateAdmin, (req, res) => {
+app.get('/api/admin/recent-contacts', authenticateAdmin, async (req, res) => {
     try {
-        const contactsPath = path.join(__dirname, 'data', 'contacts.json');
-        if (!fs.existsSync(contactsPath)) {
-            return res.json([]);
-        }
-        const contacts = JSON.parse(fs.readFileSync(contactsPath));
-        const recentContacts = contacts
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .slice(0, 5);
-        res.json(recentContacts);
+        const { data: contacts, error } = await supabase
+            .from('contacts')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (error) throw error;
+
+        res.json(contacts || []);
+
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get recent contacts' });
+        res.status(500).json({
+            error: 'Failed to get recent contacts'
+        });
     }
 });
 app.get('/api/admin/estimates', authenticateAdmin, async (req, res) => {
@@ -479,14 +584,22 @@ app.get('/api/admin/estimates', authenticateAdmin, async (req, res) => {
     }
 });
 
-app.get('/api/admin/recent-estimates', authenticateAdmin, (req, res) => {
+app.get('/api/admin/recent-estimates', authenticateAdmin, async (req, res) => {
     try {
-        const estimates = readEstimates()
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 5);
-        res.json(estimates);
+        const { data: estimates, error } = await supabase
+            .from('estimates')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (error) throw error;
+
+        res.json(estimates || []);
+
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch recent estimates' });
+        res.status(500).json({
+            error: 'Failed to get recent estimates'
+        });
     }
 });
 
@@ -572,7 +685,6 @@ const sendEmailWithRetry = async (mailOptions, retries = 3) => {
 
 // Update your existing /api/contact endpoint in server.js
 app.post('/api/contact', express.json(), async (req, res) => {
-    // Debugging: Log incoming request
     console.log("Contact form submission received at:", new Date().toISOString());
     console.log("Request body:", req.body);
 
@@ -586,24 +698,29 @@ app.post('/api/contact', express.json(), async (req, res) => {
     }
 
     try {
-        // Create new contact
-        const newContact = {
-            id: Date.now().toString(),
+        // Create contact data object
+        const contactData = {
             name: req.body.name,
             email: req.body.email,
             phone: req.body.phone || '',
             subject: req.body.subject,
             message: req.body.message,
-            status: 'new',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            status: 'new'
         };
 
-        // Save to Vercel KV instead of filesystem
-        await kv.lpush('contacts', JSON.stringify(newContact));
-        console.log(`Contact saved successfully to KV. ID: ${newContact.id}`);
+        // Insert into Supabase
+        const { data, error } = await supabase
+            .from('contacts')
+            .insert([contactData])
+            .select();
 
-        // Send email (your existing mailOptions)
+        if (error) throw error;
+
+        const savedContact = data[0];
+        const contactId = savedContact.id;
+        const createdAt = new Date(savedContact.created_at).toLocaleString();
+
+        // Send email
         const mailOptions = {
             from: `"ThermaCore Contact Form" <${process.env.GMAIL_USER}>`,
             to: process.env.CONTACT_EMAIL || process.env.RECEIVING_EMAIL,
@@ -621,8 +738,8 @@ app.post('/api/contact', express.json(), async (req, res) => {
                     <p style="line-height: 1.6;">${req.body.message}</p>
                     <div style="margin-top: 30px; padding: 15px; background: #f9f9f9; border-left: 4px solid #e74c3c; font-size: 12px;">
                         <p style="margin: 0; color: #666;">
-                            <strong>Submission ID:</strong> ${newContact.id}<br>
-                            <strong>Received:</strong> ${new Date(newContact.createdAt).toLocaleString()}
+                            <strong>Submission ID:</strong> ${contactId}<br>
+                            <strong>Received:</strong> ${createdAt}
                         </p>
                     </div>
                 </div>
@@ -635,15 +752,13 @@ app.post('/api/contact', express.json(), async (req, res) => {
             priority: 'high'
         };
 
-        // Send email
         const info = await sendEmailWithRetry(mailOptions);
         console.log('Contact email sent:', info.messageId);
 
-        // Send success response
         res.json({
             success: true,
             messageId: info.messageId,
-            contactId: newContact.id
+            contactId: contactId
         });
 
     } catch (error) {

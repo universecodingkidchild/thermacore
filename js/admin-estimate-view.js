@@ -238,14 +238,16 @@ async function tryArrayFetch(estimateId, token) {
 function renderEstimateDetails(estimate) {
     const container = document.getElementById('estimateDetails');
 
-    const formattedDate = estimate.date
-        ? new Date(estimate.date).toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
+    // Handle both new (formatted) and old (raw) date formats
+    const formattedDate = estimate.date 
+        ? (typeof estimate.date === 'string' ? estimate.date : 
+            new Date(estimate.date).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }))
         : 'Date not available';
 
     container.innerHTML = `
@@ -259,7 +261,7 @@ function renderEstimateDetails(estimate) {
                 <h3><i class="fas fa-user"></i> Contact Information</h3>
                 <div class="detail-row">
                     <span class="detail-label">Full Name:</span>
-                    <span class="detail-value">${estimate.fullName || 'Not provided'}</span>
+                    <span class="detail-value">${estimate.fullName || estimate.full_name || 'Not provided'}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Email:</span>
@@ -275,18 +277,22 @@ function renderEstimateDetails(estimate) {
                 <h3><i class="fas fa-project-diagram"></i> Project Details</h3>
                 <div class="detail-row">
                     <span class="detail-label">Project Type:</span>
-                    <span class="detail-value">${estimate.projectType || 'Not specified'}</span>
+                    <span class="detail-value">${estimate.projectType || estimate.project_type || 'Not specified'}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Services Needed:</span>
-                    <span class="detail-value">${estimate.services?.join(', ') || 'None selected'}</span>
+                    <span class="detail-value">
+                        ${Array.isArray(estimate.services) 
+                            ? estimate.services.join(', ') 
+                            : 'None selected'}
+                    </span>
                 </div>
             </div>
 
             <div class="estimate-section full-width">
                 <h3><i class="fas fa-file-alt"></i> Project Description</h3>
                 <div class="project-description">
-                    ${estimate.projectDescription || 'No description provided'}
+                    ${estimate.projectDescription || estimate.project_description || 'No description provided'}
                 </div>
             </div>
         </div>

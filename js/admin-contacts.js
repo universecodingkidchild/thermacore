@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
     const contactsTable = document.querySelector('#contactsTable tbody');
     const contactSearch = document.getElementById('contactSearch');
@@ -9,292 +9,256 @@ document.addEventListener('DOMContentLoaded', function () {
     const saveContactBtn = document.getElementById('saveContactBtn');
     const deleteContactBtn = document.getElementById('deleteContactBtn');
     const replyEmailBtn = document.getElementById('replyEmailBtn');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const errorDisplay = document.getElementById('errorDisplay');
 
     // Current contact being viewed
     let currentContact = null;
 
     // Event listeners
-    contactSearch.addEventListener('input', loadContacts);
+    contactSearch.addEventListener('input', debounce(loadContacts, 300));
     contactFilter.addEventListener('change', loadContacts);
     refreshContactsBtn.addEventListener('click', loadContacts);
     closeModalBtn.addEventListener('click', closeModal);
     saveContactBtn.addEventListener('click', saveContactChanges);
-    deleteContactBtn.addEventListener('click', deleteContact);
+    deleteContactBtn.addEventListener('click', () => deleteContact(currentContact?.id));
 
     // Close modal when clicking outside
-    contactDetailModal.addEventListener('click', function (e) {
+    contactDetailModal.addEventListener('click', function(e) {
         if (e.target === contactDetailModal) {
             closeModal();
         }
     });
 
-    // Load contacts on page load
+    // Initial load
     loadContacts();
 
-    // Functions
+    // --- Core Functions --- //
+
     function loadContacts() {
-        console.log('Loading contacts...');
+        showLoading(true);
+        errorDisplay.style.display = 'none';
 
-        // First fetch all contacts
-        fetch('/api/contacts', {
+        const searchTerm = contactSearch.value.toLowerCase();
+        const statusFilter = contactFilter.value;
+
+        fetch('/api/admin/contacts', {
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-            },
-            credentials: 'include'
+            }
         })
-            .then(response => {
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(allContacts => {
-                console.log('Received contacts:', allContacts);
-                if (!Array.isArray(allContacts)) {
-                    throw new Error('Invalid data format - expected array');
-                }
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            console.log('API Response:', data); // Debug log
+            
+            // Handle different response formats
+            const contacts = Array.isArray(data) ? data : 
+                           Array.isArray(data?.data) ? data.data : 
+                           Array.isArray(data?.contacts) ? data.contacts : [];
 
-                // Apply client-side filtering
-                const searchTerm = contactSearch.value.toLowerCase();
-                const statusFilter = contactFilter.value;
+            if (!contacts.length) {
+                renderEmptyState();
+                return;
+            }
 
-                let filteredContacts = allContacts;
-
-                // Status filter
-                if (statusFilter !== 'all') {
-                    filteredContacts = filteredContacts.filter(
-                        contact => contact.status === statusFilter
-                    );
-                }
-
-                // Search filter
-                if (searchTerm) {
-                    filteredContacts = filteredContacts.filter(contact =>
-                        (contact.name && contact.name.toLowerCase().includes(searchTerm)) ||
-                        (contact.email && contact.email.toLowerCase().includes(searchTerm)) ||
-                        (contact.subject && contact.subject.toLowerCase().includes(searchTerm)) ||
-                        (contact.message && contact.message.toLowerCase().includes(searchTerm))
-                    );
-                }
-
-                renderContactsTable(filteredContacts);
-            })
-            .catch(error => {
-                console.error('Error loading contacts:', error);
-                showNotification(`Failed to load contacts: ${error.message}`, 'error');
+            // Apply filters
+            const filteredContacts = contacts.filter(contact => {
+                const matchesStatus = statusFilter === 'all' || contact.status === statusFilter;
+                const matchesSearch = !searchTerm || 
+                    (contact.name?.toLowerCase().includes(searchTerm) ||
+                     contact.email?.toLowerCase().includes(searchTerm) ||
+                     contact.subject?.toLowerCase().includes(searchTerm));
+                return matchesStatus && matchesSearch;
             });
+
+            renderContactsTable(filteredContacts);
+        })
+        .catch(error => {
+            console.error('Error loading contacts:', error);
+            showError('Failed to load contacts. Please try again.');
+        })
+        .finally(() => showLoading(false));
     }
 
     function renderContactsTable(contacts) {
-        console.log(`Rendering ${contacts.length} contacts`);
         contactsTable.innerHTML = '';
 
-        if (!contacts || contacts.length === 0) {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td colspan="6" class="text-center">No contacts found</td>`;
-            contactsTable.appendChild(row);
+        if (!contacts.length) {
+            renderEmptyState();
             return;
         }
 
         contacts.forEach(contact => {
-            try {
-                const row = document.createElement('tr');
-                const date = new Date(contact.createdAt || new Date());
-                const formattedDate = date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                // Safely handle status with defaults
-                const status = contact.status || 'new';
-                const statusDisplay = status.charAt(0).toUpperCase() + status.slice(1);
-
-                row.innerHTML = `
-                    <td>${contact.name || 'N/A'}</td>
-                    <td><a href="mailto:${contact.email || ''}">${contact.email || 'N/A'}</a></td>
-                    <td>${contact.subject || 'N/A'}</td>
-                    <td>${formattedDate}</td>
-                    <td><span class="status-${status}">${statusDisplay}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-btn view" data-id="${contact.id || ''}">
-                                <i class="fas fa-eye"></i> View
-                            </button>
-                            <button class="action-btn delete" data-id="${contact.id || ''}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                contactsTable.appendChild(row);
-            } catch (error) {
-                console.error('Error rendering contact row:', contact, error);
-            }
+            const row = document.createElement('tr');
+            const date = contact.created_at ? new Date(contact.created_at) : new Date();
+            
+            row.innerHTML = `
+                <td>${contact.name || 'No name'}</td>
+                <td><a href="mailto:${contact.email || ''}">${contact.email || 'No email'}</a></td>
+                <td>${contact.subject || 'No subject'}</td>
+                <td>${date.toLocaleDateString()}</td>
+                <td><span class="status-badge ${contact.status || 'new'}">${(contact.status || 'new').toUpperCase()}</span></td>
+                <td>
+                    <button class="btn-view" data-id="${contact.id}">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="btn-delete" data-id="${contact.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            contactsTable.appendChild(row);
         });
 
-        // Add event listeners to action buttons
-        document.querySelectorAll('.action-btn.view').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const contactId = this.getAttribute('data-id');
-                if (contactId) {
-                    viewContactDetails(contactId);
-                }
-            });
+        // Add event listeners
+        document.querySelectorAll('.btn-view').forEach(btn => {
+            btn.addEventListener('click', () => viewContactDetails(btn.dataset.id));
         });
 
-        document.querySelectorAll('.action-btn.delete').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const contactId = this.getAttribute('data-id');
-                if (contactId && confirm('Are you sure you want to delete this contact submission?')) {
-                    deleteContact(contactId);
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (confirm('Delete this contact permanently?')) {
+                    deleteContact(btn.dataset.id);
                 }
             });
         });
     }
 
     function viewContactDetails(contactId) {
-        console.log(`Viewing contact details for ID: ${contactId}`);
-        fetch(`/api/contacts/${contactId}`, {
+        showLoading(true);
+        
+        fetch(`/api/admin/contacts/${contactId}`, {
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-            },
-            credentials: 'include'
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Accept': 'application/json' // Explicitly request JSON
+            }
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(contact => {
-                if (!contact) {
-                    throw new Error('Contact not found');
-                }
+        .then(response => {
+            // First check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server returned non-JSON response');
+            }
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(contact => {
+            if (!contact) throw new Error('Contact data is empty');
+            
+            currentContact = contact;
+            
+            // Populate modal
+            document.getElementById('modalContactName').textContent = contact.name || 'No name';
+            document.getElementById('modalContactEmail').textContent = contact.email || 'No email';
+            document.getElementById('modalContactPhone').textContent = contact.phone || 'No phone';
+            document.getElementById('modalContactSubject').textContent = contact.subject || 'No subject';
+            document.getElementById('modalContactMessage').textContent = contact.message || 'No message';
+            document.getElementById('modalContactStatus').value = contact.status || 'new';
+            
+            // Show modal
+            contactDetailModal.classList.add('show');
+        })
+        .catch(error => {
+            console.error('Error loading contact details:', error);
+            showError('Failed to load contact details. The contact may not exist.');
+        })
+        .finally(() => showLoading(false));
+    }
 
-                currentContact = contact;
-                console.log('Contact details:', contact);
+    // --- Helper Functions --- //
 
-                // Populate modal
-                document.getElementById('detailName').textContent = contact.name || 'N/A';
-                document.getElementById('detailEmail').textContent = contact.email || 'N/A';
-                document.getElementById('detailPhone').textContent = contact.phone || 'Not provided';
-                document.getElementById('detailSubject').textContent = contact.subject || 'N/A';
-                document.getElementById('detailMessage').textContent = contact.message || 'N/A';
-                document.getElementById('detailStatus').value = contact.status || 'new';
+    function showLoading(show) {
+        loadingIndicator.style.display = show ? 'block' : 'none';
+    }
 
-                // Set reply link
-                if (contact.email && contact.subject) {
-                    replyEmailBtn.href = `mailto:${contact.email}?subject=Re: ${encodeURIComponent(contact.subject)}`;
-                    replyEmailBtn.style.display = 'inline-block';
-                } else {
-                    replyEmailBtn.style.display = 'none';
-                }
+    function showError(message) {
+        errorDisplay.textContent = message;
+        errorDisplay.style.display = 'block';
+    }
 
-                // Open modal
-                contactDetailModal.classList.add('show');
-                document.body.style.overflow = 'hidden';
-            })
-            .catch(error => {
-                console.error('Error fetching contact details:', error);
-                showNotification(`Failed to load contact details: ${error.message}`, 'error');
-            });
+    function renderEmptyState() {
+        contactsTable.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No contacts found</p>
+                </td>
+            </tr>
+        `;
     }
 
     function closeModal() {
         contactDetailModal.classList.remove('show');
-        document.body.style.overflow = '';
         currentContact = null;
     }
 
     function saveContactChanges() {
         if (!currentContact) return;
 
-        const newStatus = document.getElementById('detailStatus').value;
-        console.log(`Updating contact ${currentContact.id} status to ${newStatus}`);
-
-        fetch(`/api/contacts/${currentContact.id}/status`, {
-            method: 'PUT',
+        const newStatus = document.getElementById('modalContactStatus').value;
+        
+        fetch(`/api/admin/contacts/${currentContact.id}`, {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             },
-            body: JSON.stringify({ status: newStatus }),
-            credentials: 'include'
+            body: JSON.stringify({ status: newStatus })
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(updatedContact => {
-                console.log('Contact updated:', updatedContact);
-                showNotification('Contact updated successfully', 'success');
-                closeModal();
-                loadContacts();
-            })
-            .catch(error => {
-                console.error('Error updating contact:', error);
-                showNotification(`Failed to update contact: ${error.message}`, 'error');
-            });
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to update contact');
+            closeModal();
+            loadContacts();
+            showNotification('Contact updated successfully', 'success');
+        })
+        .catch(error => {
+            console.error('Error updating contact:', error);
+            showNotification('Failed to update contact', 'error');
+        });
     }
 
     function deleteContact(contactId) {
-        if (!contactId && currentContact) {
-            contactId = currentContact.id;
-        }
-
         if (!contactId) return;
-
-        console.log(`Deleting contact ID: ${contactId}`);
-        fetch(`/api/contacts/${contactId}`, {
+        
+        fetch(`/api/admin/contacts/${contactId}`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-            },
-            credentials: 'include'
+            }
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(() => {
-                console.log('Contact deleted successfully');
-                showNotification('Contact deleted successfully', 'success');
-                if (currentContact) closeModal();
-                loadContacts();
-            })
-            .catch(error => {
-                console.error('Error deleting contact:', error);
-                showNotification(`Failed to delete contact: ${error.message}`, 'error');
-            });
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to delete contact');
+            showNotification('Contact deleted successfully', 'success');
+            loadContacts();
+            if (currentContact) closeModal();
+        })
+        .catch(error => {
+            console.error('Error deleting contact:', error);
+            showNotification('Failed to delete contact', 'error');
+        });
     }
 
     function showNotification(message, type) {
-        console.log(`Showing notification: [${type}] ${message}`);
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
         document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
 
-        setTimeout(() => {
-            notification.classList.add('show');
-        }, 10);
-
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 3000);
+    function debounce(func, delay) {
+        let timeout;
+        return function() {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), delay);
+        };
     }
 });
