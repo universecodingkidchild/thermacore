@@ -1,55 +1,85 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "backend/server.js",
-        "use": "@vercel/node",
-        "config": {
-          "includeFiles": [
-            "backend/utils/**",
-            "backend/routes/**",
-            "backend/services/**"
-          ],
-          "nodeVersion": "18.x"
-        }
-      },
-      {
-        "src": "project/**/*",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "admin/**/*",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "css/**/*",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "js/**/*",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "images/**/*",
-        "use": "@vercel/static"
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "backend/**/*",  
+          "api/**/*",    
+          "data/**/*"     
+        ],
+        "nodeVersion": "18.x"
       }
-    ],
-    "routes": [
-      {
-        "src": "/api/(.*)",
-        "dest": "/backend/server.js"
-      },
-      {
-        "src": "/admin/(.*)",
-        "dest": "/admin/$1"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/project/$1"
-      }
-    ],
-    "github": {
-      "silent": true,
-      "autoJobCancellation": false
+    },
+    {
+      "src": "admin/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "project/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "css/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "images/**/*",
+      "use": "@vercel/static"
     }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/server.js"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "/admin/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/project/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "/css/(.*)",
+      "dest": "/css/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/js/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/images/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    }
+  ],
+  "github": {
+    "silent": true,
+    "autoJobCancellation": false
+  },
+  "env": {
+    "NODE_ENV": "production"
   }
+}

@@ -63,7 +63,7 @@
                             <i class="fas fa-users"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>0</h3>
+                            <h3 class="contacts-count">0</h3>  <!-- Added class here -->
                             <p>Contact Forms Submitted</p>
                         </div>
                     </div>
@@ -104,191 +104,161 @@
             </div>
         </main>
     </div>
-
-    <!-- Add this right before the closing body tag -->
-    <!-- Add this right before the closing body tag -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Load estimates count
-            fetch('/api/admin/estimates-count', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    document.querySelector('.stat-card:nth-child(1) h3').textContent = data.count;
-                });
-
-            // Load recent estimates
-            fetch('/api/admin/recent-estimates', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                }
-            })
-                .then(response => response.json())
-                .then(estimates => {
-                    const activityList = document.querySelector('.activity-list');
-                    activityList.innerHTML = ''; // Clear existing placeholder items
-
-                    estimates.forEach(estimate => {
-                        const item = document.createElement('div');
-                        item.className = 'activity-item';
-                        item.innerHTML = `
-                    <div class="activity-icon">
-                        <i class="fas fa-file-upload"></i>
-                    </div>
-                    <div class="activity-details">
-                        <p><strong>${estimate.fullName}</strong> submitted an estimate request</p>
-                        <span class="activity-time">${formatTime(estimate.date)}</span>
-                    </div>
-                `;
-                        activityList.appendChild(item);
-                    });
-                });
-
-            function formatTime(dateString) {
-                const date = new Date(dateString);
-                const now = new Date();
-                const diff = now - date;
-                const minutes = Math.floor(diff / 60000);
-
-                if (minutes < 1) return 'Just now';
-                if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-                if (minutes < 1440) return `${Math.floor(minutes / 60)} hour${Math.floor(minutes / 60) === 1 ? '' : 's'} ago`;
-                return `${Math.floor(minutes / 1440)} day${Math.floor(minutes / 1440) === 1 ? '' : 's'} ago`;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            const adminToken = localStorage.getItem('adminToken');
+            if (!adminToken) {
+                window.location.href = 'login.html';
+                return;
             }
-        });
-    </script>
-    <!-- Add this right after the existing script in your index.html -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Load all stats
-            Promise.all([
-                // Existing estimate count
-                fetch('/api/admin/estimates-count', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                    }
-                }),
-
-                // Contact count
-                fetch('/api/admin/contacts-count', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                    }
-                }),
-
-                // Recent activity (combine estimates and contacts)
-                fetch('/api/admin/recent-estimates', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                    }
-                }),
-                fetch('/api/admin/recent-contacts', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                    }
-                })
-            ])
-                .then(responses => Promise.all(responses.map(r => r.json())))
-                .then(([estimatesCount, contactsCount, recentEstimates, recentContacts]) => {
-                    // Update counts (removed blueprints count update)
-                    document.querySelector('.stat-card:nth-child(1) h3').textContent = estimatesCount.count;
-                    document.querySelector('.stat-card:nth-child(3) h3').textContent = contactsCount.count;
-
-
-                    // Combine and sort recent activity
-                    const allActivity = [
-                        ...recentEstimates.map(e => ({
-                            type: 'estimate',
-                            name: e.fullName,
-                            date: e.date,
-                            text: 'submitted an estimate request'
-                        })),
-                        ...recentContacts.map(c => ({
-                            type: 'contact',
-                            name: c.name,
-                            date: c.createdAt,
-                            text: 'submitted a contact form'
-                        }))
-                    ].sort((a, b) => new Date(b.date) - new Date(a.date))
-                        .slice(0, 5); // Get top 5 most recent
+    
+            const headers = {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            };
+    
+            // Load dashboard data
+            loadDashboardData();
+    
+            // Set up auto-refresh every 30 seconds
+            const refreshInterval = setInterval(loadDashboardData, 30000);
+    
+            // Logout functionality
+            document.querySelector('.logout-button').addEventListener('click', function() {
+                clearInterval(refreshInterval);
+                localStorage.removeItem('adminToken');
+                window.location.href = 'login.html';
+            });
+    
+            async function loadDashboardData() {
+                try {
+                    
+                    // Fetch all data
+                    const [estimatesCount, contactsCount, recentEstimates, recentContacts] = await Promise.all([
+                        fetchData('/api/admin/estimates-count'),
+                        fetchData('/api/admin/contacts-count'),
+                        fetchData('/api/admin/recent-estimates'),
+                        fetchData('/api/admin/recent-contacts')
+                    ]);
+                    
+                    
+    
+                    // Update counts
+                    updateCounter('.stat-card:nth-child(1) h3', estimatesCount?.count || 0);
+                    updateCounter('.contacts-count', contactsCount?.count || 0);
+                    console.log('Contacts count data:', contactsCount);
 
                     // Update activity feed
-                    const activityList = document.querySelector('.activity-list');
-                    activityList.innerHTML = '';
-
-                    allActivity.forEach(item => {
-                        const activityItem = document.createElement('div');
-                        activityItem.className = 'activity-item';
-                        activityItem.innerHTML = `
-                <div class="activity-icon">
-                    <i class="fas fa-${item.type === 'estimate' ? 'file-upload' : 'envelope'}"></i>
-                </div>
-                <div class="activity-details">
-                    <p><strong>${item.name}</strong> ${item.text}</p>
-                    <span class="activity-time">${formatTime(item.date)}</span>
-                </div>
-            `;
-                        activityList.appendChild(activityItem);
-                    });
-                });
-
-
-            function formatTime(dateString) {
-                const date = new Date(dateString);
-                const now = new Date();
-                const diff = now - date;
-                const minutes = Math.floor(diff / 60000);
-
-                if (minutes < 1) return 'Just now';
-                if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-                if (minutes < 1440) return `${Math.floor(minutes / 60)} hour${Math.floor(minutes / 60) === 1 ? '' : 's'} ago`;
-                return `${Math.floor(minutes / 1440)} day${Math.floor(minutes / 1440) === 1 ? '' : 's'} ago`;
-            }
-
-            // Refresh data every 30 seconds
-            setInterval(() => {
-                if (window.location.pathname.endsWith('index.html')) {
-                    window.location.reload();
+                  // Update activity feed
+        updateActivityFeed([
+            ...formatActivities(recentEstimates, 'estimate', 'full_name', 'submitted an estimate request'),
+            ...formatActivities(recentContacts, 'contact', 'name', 'submitted a contact form')
+        ]);
+        
+    } catch (error) {
+        console.error('Dashboard load error:', error); // Better error logging
+        showError('Failed to load dashboard data');
+    }
+}
+    
+            async function fetchData(endpoint) {
+                try {
+                    const response = await fetch(endpoint, { headers });
+                    if (!response.ok) return null;
+                    return await response.json();
+                } catch (error) {
+                    return null;
                 }
-            }, 30000);
-        });
-    </script>
-    <script>// Listen for profile picture updates
-        window.addEventListener('storage', function (event) {
-            if (event.key === 'adminProfilePicture') {
-                updateDashboardProfilePicture(event.newValue);
             }
-        });
-
-        // Listen for messages from settings page
-        window.addEventListener('message', function (event) {
-            if (event.data.type === 'profilePictureUpdate') {
-                updateDashboardProfilePicture(event.data.image);
+    
+            function formatActivities(items, type, nameField, text) {
+                if (!Array.isArray(items)) return [];
+                return items.map(item => ({
+                    type,
+                    name: item[nameField] || 'Unknown',
+                    date: item.created_at || new Date().toISOString(),
+                    text
+                })).slice(0, 5); // Limit to 5 most recent
             }
-        });
-
-        function updateDashboardProfilePicture(imageData) {
-            const profileImg = document.querySelector('.admin-user img');
-            if (profileImg) {
-                profileImg.src = imageData;
+    
+            function updateActivityFeed(activities) {
+                const activityList = document.querySelector('.activity-list');
+                if (!activityList) return;
+    
+                activityList.innerHTML = activities.length > 0 
+                    ? activities.sort((a, b) => new Date(b.date) - new Date(a.date))
+                        .map(item => `
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-${item.type === 'estimate' ? 'file-upload' : 'envelope'}"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <p><strong>${item.name}</strong> ${item.text}</p>
+                                    <span class="activity-time">${formatTime(item.date)}</span>
+                                </div>
+                            </div>
+                        `).join('')
+                    : '<div class="activity-item"><p>No recent activity</p></div>';
             }
-        }
-
-        // Load saved profile picture on dashboard load
-        document.addEventListener('DOMContentLoaded', function () {
+    
+            function updateCounter(selector, value) {
+                const element = document.querySelector(selector);
+                if (element) element.textContent = value;
+            }
+    
+            function formatTime(dateString) {
+                try {
+                    const date = new Date(dateString);
+                    const now = new Date();
+                    const diff = now - date;
+                    const minutes = Math.floor(diff / 60000);
+    
+                    if (minutes < 1) return 'Just now';
+                    if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+                    if (minutes < 1440) return `${Math.floor(minutes / 60)} hour${Math.floor(minutes / 60) === 1 ? '' : 's'} ago`;
+                    return `${Math.floor(minutes / 1440)} day${Math.floor(minutes / 1440) === 1 ? '' : 's'} ago`;
+                } catch (e) {
+                    return 'Recently';
+                }
+            }
+    
+            function showError(message) {
+                const activityList = document.querySelector('.activity-list');
+                if (activityList) {
+                    activityList.innerHTML = `
+                        <div class="activity-item error">
+                            <p>${message}</p>
+                        </div>
+                    `;
+                }
+            }
+    
+            // Profile picture handling
+            function updateDashboardProfilePicture(imageData) {
+                const profileImg = document.querySelector('.admin-user img');
+                if (profileImg && imageData) {
+                    profileImg.src = imageData;
+                }
+            }
+    
+            window.addEventListener('storage', function(event) {
+                if (event.key === 'adminProfilePicture') {
+                    updateDashboardProfilePicture(event.newValue);
+                }
+            });
+    
+            // Load saved profile picture
             const savedImage = localStorage.getItem('adminProfilePicture');
             if (savedImage) {
                 updateDashboardProfilePicture(savedImage);
             }
-        });</script>
+        });
+    </script>
+    
     <script src="../js/admin-auth.js"></script>
     <script src="../js/admin.js"></script>
     <script src="../js/admin-settings.js"></script>
     <script src="../js/admin-common.js"></script>
 </body>
-</body>
-
 </html>

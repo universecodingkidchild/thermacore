@@ -82,6 +82,22 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .finally(() => showLoading(false));
     }
+    // Safe element value/text setter
+function setElementValue(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.value = value || '';
+}
+
+function setElementText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text || '';
+}
+
+// Safe element visibility toggle
+function toggleElement(id, show) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? 'block' : 'none';
+}
 
     function renderContactsTable(contacts) {
         contactsTable.innerHTML = '';
@@ -133,19 +149,11 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`/api/admin/contacts/${contactId}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-                'Accept': 'application/json' // Explicitly request JSON
+                'Accept': 'application/json'
             }
         })
         .then(response => {
-            // First check if response is JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Server returned non-JSON response');
-            }
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return response.json();
         })
         .then(contact => {
@@ -153,20 +161,45 @@ document.addEventListener('DOMContentLoaded', function() {
             
             currentContact = contact;
             
-            // Populate modal
-            document.getElementById('modalContactName').textContent = contact.name || 'No name';
-            document.getElementById('modalContactEmail').textContent = contact.email || 'No email';
-            document.getElementById('modalContactPhone').textContent = contact.phone || 'No phone';
-            document.getElementById('modalContactSubject').textContent = contact.subject || 'No subject';
-            document.getElementById('modalContactMessage').textContent = contact.message || 'No message';
-            document.getElementById('modalContactStatus').value = contact.status || 'new';
+            // Safely populate modal fields
+            const setTextContent = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value || 'Not provided';
+            };
+            
+            const setValue = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.value = value || '';
+            };
+    
+            setTextContent('modalContactName', contact.name);
+            setTextContent('modalContactEmail', contact.email);
+            setTextContent('modalContactPhone', contact.phone);
+            setTextContent('modalContactSubject', contact.subject);
+            setTextContent('modalContactMessage', contact.message);
+            
+            // Safely set status dropdown if it exists
+            setValue('modalContactStatus', contact.status);
+            
+            // Set reply email link if email exists
+            const replyBtn = document.getElementById('replyEmailBtn');
+            if (replyBtn) {
+                if (contact.email) {
+                    const subject = contact.subject ? `Re: ${contact.subject}` : 'Regarding your inquiry';
+                    replyBtn.href = `mailto:${contact.email}?subject=${encodeURIComponent(subject)}`;
+                    replyBtn.style.display = 'inline-block';
+                } else {
+                    replyBtn.style.display = 'none';
+                }
+            }
             
             // Show modal
-            contactDetailModal.classList.add('show');
+            const modal = document.getElementById('contactDetailModal');
+            if (modal) modal.classList.add('show');
         })
         .catch(error => {
             console.error('Error loading contact details:', error);
-            showError('Failed to load contact details. The contact may not exist.');
+            showError('Failed to load contact details: ' + (error.message || 'Unknown error'));
         })
         .finally(() => showLoading(false));
     }

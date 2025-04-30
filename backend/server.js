@@ -534,6 +534,29 @@ app.get('/api/admin/estimates-count', authenticateAdmin, async (req, res) => {
         });
     }
 });
+app.get('/api/admin/contacts-count', authenticateAdmin, async (req, res) => {
+    try {
+        // Alternative counting method
+        const { data, count, error } = await supabase
+            .from('contacts')
+            .select('*', { count: 'exact' });
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            count: count || data?.length || 0
+        });
+
+    } catch (error) {
+        console.error('Contacts count error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get contacts count'
+        });
+    }
+});
+
 // Add these endpoints alongside your existing estimate endpoints
 app.get('/api/admin/estimates-count', authenticateAdmin, async (req, res) => {
     try {
@@ -557,6 +580,7 @@ app.get('/api/admin/estimates-count', authenticateAdmin, async (req, res) => {
 });
 
 app.get('/api/admin/recent-contacts', authenticateAdmin, async (req, res) => {
+    console.log('Fetching recent contacts...'); // Add this
     try {
         const { data: contacts, error } = await supabase
             .from('contacts')
@@ -564,11 +588,14 @@ app.get('/api/admin/recent-contacts', authenticateAdmin, async (req, res) => {
             .order('created_at', { ascending: false })
             .limit(5);
 
+        console.log('Supabase response:', { contacts, error }); // Add this
+
         if (error) throw error;
 
         res.json(contacts || []);
 
     } catch (error) {
+        console.error('Recent contacts error:', error); // Add this
         res.status(500).json({
             error: 'Failed to get recent contacts'
         });
