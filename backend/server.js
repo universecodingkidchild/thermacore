@@ -170,31 +170,39 @@ app.post('/api/clear-data/:type', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-app.post('/api/admin/login', loginLimiter, (req, res) => {
-    const { username, password } = req.body;
-
-    if (username === ADMIN_CREDENTIALS.username &&
-        password === ADMIN_CREDENTIALS.password) {
-
-        const token = jwt.sign(
-            { username },
-            process.env.JWT_SECRET || 'your-secret-key',
-            { expiresIn: '8h' }
-        );
-
-        res.cookie('adminToken', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 8 * 60 * 60 * 1000,
-            sameSite: 'strict'
-        });
-
-        // Also send in response
-        res.json({ token });
-    } else {
-        res.status(401).json({ error: 'Invalid credentials' });
+app.post('/api/admin/login', async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      // Get credentials from environment variables
+      const adminUsername = process.env.ADMIN_USERNAME;
+      const adminPassword = process.env.ADMIN_PASSWORD;
+  
+      // Verify credentials
+      if (username !== adminUsername || password !== adminPassword) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+  
+      // Generate JWT token
+      const token = jwt.sign(
+        { admin: true, username: adminUsername },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+  
+      res.json({ 
+        success: true,
+        token 
+      });
+  
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Login failed' 
+      });
     }
-});
+  });
 
 app.post('/api/admin/logout', (req, res) => {
     res.clearCookie('adminToken', {
