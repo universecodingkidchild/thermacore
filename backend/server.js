@@ -171,35 +171,43 @@ app.post('/api/clear-data/:type', async (req, res) => {
     }
 });
 app.post('/api/admin/login', async (req, res) => {
+    console.log('Login request received'); // Debug log
+    
     try {
+      console.log('Request body:', req.body); // Log incoming data
       const { username, password } = req.body;
-      
-      // Get credentials from environment variables
-      const adminUsername = process.env.ADMIN_USERNAME;
-      const adminPassword = process.env.ADMIN_PASSWORD;
   
-      // Verify credentials
-      if (username !== adminUsername || password !== adminPassword) {
+      // Debug environment variables
+      console.log('Env vars:', {
+        expectedUser: process.env.ADMIN_USERNAME ? 'exists' : 'MISSING',
+        expectedPass: process.env.ADMIN_PASSWORD ? 'exists' : 'MISSING',
+        jwtSecret: process.env.JWT_SECRET ? 'exists' : 'MISSING'
+      });
+  
+      if (!username || !password) {
+        console.log('Missing credentials');
+        return res.status(400).json({ error: 'Username and password required' });
+      }
+  
+      if (username !== process.env.ADMIN_USERNAME || password !== process.env.ADMIN_PASSWORD) {
+        console.log('Invalid credentials attempt');
         return res.status(401).json({ error: 'Invalid credentials' });
       }
   
-      // Generate JWT token
       const token = jwt.sign(
-        { admin: true, username: adminUsername },
+        { admin: true },
         process.env.JWT_SECRET,
         { expiresIn: '24h' }
       );
   
-      res.json({ 
-        success: true,
-        token 
-      });
+      console.log('Login successful');
+      res.json({ token });
   
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ 
-        success: false,
-        error: 'Login failed' 
+        error: 'Login failed',
+        details: process.env.NODE_ENV === 'development' ? error.message : null
       });
     }
   });
