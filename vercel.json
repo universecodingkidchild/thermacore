@@ -9,6 +9,7 @@
           "backend/**/*",
           "api/**/*",
           "data/**/*",
+          "backend/data/**/*",
           "node_modules/**/*"
         ],
         "nodeVersion": "18.x"
